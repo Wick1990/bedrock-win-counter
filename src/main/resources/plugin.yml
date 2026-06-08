@@ -1,0 +1,28 @@
+name: BedrockWinCounter
+version: 1.0.0
+main: de.wick.minecraft.bedrockwins.BedrockWinCounterPlugin
+api-version: '1.21'
+author: Wick1990
+description: Tracks s2e-bedrock-box wins, displays them in-game, and provides an integrated Bedrock control menu.
+
+commands:
+  bedrockmenu:
+    description: Opens the integrated Bedrock admin menu.
+    usage: /bedrockmenu
+  bedrockwins:
+    description: Shows or manages the Bedrock win counter.
+    usage: /bedrockwins [add|remove|set|reset|target|reload|display]
+    aliases: [bwins]
+
+permissions:
+  bedrockwins.menu.use:
+    description: Allows opening the integrated Bedrock menu.
+    default: false
+  bedrockwins.view:
+    description: Allows viewing the Bedrock win counter.
+    default: false
+  bedrockwins.admin:
+    description: Allows managing the Bedrock win counter.
+    default: false
+    children:
+      bedrockwins.view: true

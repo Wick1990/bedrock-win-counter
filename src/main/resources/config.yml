@@ -1,0 +1,23 @@
+win-markers:
+  - bedrock_win
+
+display:
+  mode: BOSSBAR
+  scoreboard:
+    objective-name: bedrock_wins
+    display-name: "&6Bedrock Wins"
+    entry-name: "&eWins"
+    display-slot: SIDEBAR
+  bossbar:
+    title-label: "Wins"
+    color: YELLOW
+    style: SOLID
+    text-colors:
+      negative: "&c"
+      zero: "&6"
+      positive: "&a"
+    progress:
+      enabled: true
+
+messages:
+  prefix: "&8[&6BedrockWins&8] &r"

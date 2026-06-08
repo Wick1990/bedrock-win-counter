@@ -1,0 +1,102 @@
+Bedrock Win Counter Community License 1.0
+
+Copyright (c) 2026 Wick1990
+
+1. Purpose
+
+This license is intended to make the Software publicly available in source-code form,
+free of charge, for community use, modification, and collaboration, while prohibiting
+sale of the Software itself or paid redistribution of the Software.
+
+2. Definitions
+
+"Software" means the Bedrock Win Counter project, including its source code, compiled
+binaries, configuration examples, and any files distributed with it under this license.
+
+"You" means any individual or legal entity exercising rights under this license.
+
+"Sell" or "Sale" means to exchange the Software, or access to the Software, for money
+or other consideration where the Software itself is the paid product, a paid component,
+or a paid deliverable. Sale includes, without limitation:
+
+- selling copies of the Software in source or binary form
+- charging for access to download the Software
+- licensing the Software for a fee
+- bundling the Software into a paid plugin pack, marketplace listing, or paid software offer
+- offering modified versions of the Software as a paid product
+
+For clarity, Sale does not include charging for unrelated services or infrastructure,
+such as game server hosting, general server access, donations, memberships, sponsorships,
+or support services, so long as the Software itself is not the item being sold, licensed,
+or paywalled.
+
+3. License Grant
+
+Subject to the terms and conditions of this license, Wick1990 grants You a worldwide,
+non-exclusive, royalty-free license to:
+
+- use, run, and install the Software
+- copy and reproduce the Software
+- modify the Software
+- distribute the Software, in source or compiled form, free of charge only
+
+4. Conditions
+
+You may exercise the rights granted above only if You comply with all of the following:
+
+- You must include this license text with any distribution of the Software or a modified version.
+- You must preserve all copyright, attribution, and license notices included with the Software.
+- If You distribute a modified version, You must clearly state that changes were made.
+- Any distribution of the Software, whether modified or unmodified, must be provided under this same license.
+- You may not represent modified versions as the official release of Wick1990 without prior written permission.
+
+5. No Sale
+
+You may not Sell the Software.
+
+This restriction applies to both unmodified and modified versions of the Software, and to
+both source and compiled distributions.
+
+Without prior written permission from Wick1990, You may not:
+
+- charge money specifically for the Software
+- require payment to obtain or use the Software
+- include the Software in a paid bundle where the Software is marketed as part of the paid value
+- resell, relicense for a fee, lease, rent, or otherwise commercially distribute the Software itself
+
+6. Permitted Server Use
+
+You may use the Software on private or public Minecraft servers, including servers that
+receive donations, subscriptions, memberships, sponsorships, or other revenue, provided
+that the Software itself is not being Sold and access to the Software itself is not paywalled
+as a separate paid product.
+
+7. Contributions
+
+Unless explicitly agreed otherwise in writing, any contribution intentionally submitted to
+the project for inclusion in the Software is provided under this same license.
+
+8. Termination
+
+If You violate this license, Your rights under it terminate automatically.
+
+If You stop the violation and come back into full compliance, Your rights are reinstated
+from the date of compliance, unless Wick1990 has given You written notice of a separate claim.
+
+9. No Trademark Rights
+
+This license does not grant any right to use the names, branding, logos, or project identity
+of Wick1990, except as reasonably necessary for attribution.
+
+10. Disclaimer of Warranty
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, AND NON-INFRINGEMENT.
+
+11. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL WICK1990 BE LIABLE
+FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR
+OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.

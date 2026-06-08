@@ -1,0 +1,153 @@
+messages:
+  only-player: "&cDieses Menü ist nur ingame nutzbar."
+  no-permission: "&cDafuer fehlen dir die Rechte."
+  menu-no-permission: "&cDu darfst dieses Menü nicht öffnen."
+  wins-reset: "&aBedrock-Wins wurden zurueckgesetzt."
+  wins-adjusted: "&aBedrock-Wins angepasst. Neuer Stand: &6%wins%"
+  wins-reduced: "&aBedrock-Wins reduziert. Neuer Stand: &6%wins%"
+  wins-set: "&aBedrock-Wins gesetzt. Neuer Stand: &6%wins%"
+  target-set: "&aWin-Ziel gesetzt: &6%value%"
+  display-toggled: "&aAnzeige umgeschaltet: &6%mode%"
+  menu-value-set: "&7Menuewert &8(%type%&8) &7gesetzt auf: &6%value%"
+  menu-value-now: "&7Menuewert &8(%type%&8) &7jetzt: &6%value%"
+
+menu:
+  shared:
+    back:
+      name: "&7Zurück"
+      lore: []
+    close:
+      name: "&cSchließen"
+      lore: []
+    plus-one:
+      name: "&a+1"
+    plus-five:
+      name: "&a+5"
+    plus-ten:
+      name: "&a+10"
+    minus-one:
+      name: "&c-1"
+    minus-five:
+      name: "&c-5"
+    minus-ten:
+      name: "&c-10"
+    positive-lore: []
+    negative-lore: []
+  main:
+    title: "&8Bedrock Menü"
+    header:
+      name: "&5&lBedrock Menü"
+      lore: []
+    teleport:
+      name: "&bZur Box teleportieren"
+      lore:
+        - "&8Befehl: &7/bedrock tp"
+    main-user:
+      name: "&aMain User setzen"
+      lore:
+        - "&7Setzt dich direkt als Main User."
+        - ""
+        - "&8Befehl: &f/bedrock set_main_user %player%"
+    toplock:
+      name: "&7Toplock toggeln"
+      lore:
+        - "&8Befehl: &7/bedrock toplock"
+    block-range:
+      name: "&eBlock Range 20 setzen"
+      lore:
+        - "&7Setzt deine eigene"
+        - "&7Block-Interaction-Range auf 20."
+        - ""
+        - "&8Befehl: &f/attribute %player% ... 20"
+    fill:
+      name: "&fBox füllen"
+      lore:
+        - "&8Befehl: &7/bedrock fill"
+    clear:
+      name: "&9Box leeren"
+      lore:
+        - "&8Befehl: &7/bedrock clear"
+    target:
+      name: "&eWin-Ziel setzen"
+      lore:
+        - "&7Öffnet ein Untermenü."
+        - "&7Dort stellst du den Zielwert"
+        - "&7mit +1, +5 und +10 ein."
+    change:
+      name: "&aWins ändern"
+      lore:
+        - "&7Öffnet ein Untermenü."
+        - "&7Grüne Felder addieren Wins."
+        - "&7Rote Felder ziehen direkt ab."
+    set:
+      name: "&6Wins set"
+      lore:
+        - "&7Öffnet ein Untermenü."
+        - "&7Dort kannst du den Wert"
+        - "&7auch negativ einstellen."
+    reset:
+      name: "&4Wins reset"
+      lore:
+        - "&8Befehl: &7/bedrockwins reset"
+    display-toggle:
+      name: "&dDisplay toggle"
+      lore:
+        - "&8Befehl: &7/bedrockwins display toggle"
+        - "&7Aktuell: &f%mode%"
+    wins-info:
+      name: "&fAktuelle Wins"
+      lore:
+        - "&7Stand: &6%wins%"
+  target:
+    title: "&8Win-Ziel"
+    header:
+      name: "&e&lWin-Ziel setzen"
+      lore:
+        - "&7Stelle den Zielwert mit den"
+        - "&7Schaltflächen unten ein."
+    info:
+      name: "&fAktueller Zielwert"
+      lore:
+        - "&7Ziel: &e%value%"
+        - "&7Aktuelle Wins: &6%wins%"
+    reset:
+      name: "&eAuf 0 setzen"
+      lore: []
+    confirm:
+      name: "&aZiel übernehmen"
+      lore:
+        - "&7Übernimmt den aktuell"
+        - "&7eingestellten Zielwert."
+  change:
+    title: "&8Wins ändern"
+    header:
+      name: "&a&lWins ändern"
+      lore:
+        - "&7Jeder Klick führt die"
+        - "&7Änderung sofort live aus."
+    info:
+      name: "&fDirekte Änderung"
+      lore:
+        - "&aGrün = add"
+        - "&cRot = remove"
+        - "&7Stand: &6%wins%"
+  set:
+    title: "&8Wins set"
+    header:
+      name: "&6&lWins set"
+      lore:
+        - "&7Hier sind auch negative Werte"
+        - "&7ausdrücklich erlaubt."
+    info:
+      name: "&fAktueller Set-Wert"
+      lore:
+        - "&7Wert: &6%value%"
+        - "&7Aktuelle Wins: &6%wins%"
+    reset:
+      name: "&eAuf 0 setzen"
+      lore: []
+    confirm:
+      name: "&6Set ausführen"
+      lore:
+        - "&7Übernimmt den aktuell"
+        - "&7eingestellten Set-Wert."

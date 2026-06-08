@@ -1,0 +1,98 @@
+materials:
+  shared:
+    filler: BLACK_STAINED_GLASS_PANE
+    info: PAPER
+    positive: LIME_STAINED_GLASS_PANE
+    negative: RED_STAINED_GLASS_PANE
+    back: ARROW
+    close: BARRIER
+    close-door: OAK_DOOR
+    reset: BARRIER
+  main:
+    header: OBSIDIAN
+    teleport: ENDER_PEARL
+    main-user: PLAYER_HEAD
+    toplock: IRON_BARS
+    block-range: SPYGLASS
+    fill: IRON_BLOCK
+    clear: WATER_BUCKET
+    target: TARGET
+    change: LIME_DYE
+    set: WRITABLE_BOOK
+    reset: BARRIER
+    display-toggle: REDSTONE_TORCH
+    wins-info: PAPER
+  target:
+    header: TARGET
+    confirm: LIME_CONCRETE
+  change:
+    header: LIME_DYE
+  set:
+    header: WRITABLE_BOOK
+    confirm: GOLD_BLOCK
+
+amounts:
+  minus-one: 1
+  minus-five: 5
+  minus-ten: 10
+  plus-one: 1
+  plus-five: 5
+  plus-ten: 10
+
+layout:
+  main:
+    size: 27
+    header: 4
+    teleport: 10
+    main-user: 11
+    toplock: 12
+    block-range: 13
+    fill: 14
+    clear: 15
+    target: 19
+    change: 20
+    set: 21
+    reset: 22
+    display-toggle: 23
+    wins-info: 24
+    close: 26
+  target:
+    size: 27
+    header: 4
+    info: 13
+    minus-ten: 10
+    minus-five: 11
+    minus-one: 12
+    plus-one: 14
+    plus-five: 15
+    plus-ten: 16
+    reset: 18
+    back: 20
+    confirm: 22
+    close: 26
+  change:
+    size: 27
+    header: 4
+    info: 13
+    minus-ten: 10
+    minus-five: 11
+    minus-one: 12
+    plus-one: 14
+    plus-five: 15
+    plus-ten: 16
+    back: 22
+    close: 26
+  set:
+    size: 27
+    header: 4
+    info: 13
+    minus-ten: 10
+    minus-five: 11
+    minus-one: 12
+    plus-one: 14
+    plus-five: 15
+    plus-ten: 16
+    reset: 18
+    back: 20
+    confirm: 22
+    close: 26
