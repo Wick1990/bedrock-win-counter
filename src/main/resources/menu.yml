@@ -8,20 +8,37 @@ materials:
     close: BARRIER
     close-door: OAK_DOOR
     reset: BARRIER
-  main:
-    header: OBSIDIAN
-    teleport: ENDER_PEARL
-    main-user: PLAYER_HEAD
-    toplock: IRON_BARS
-    block-range: SPYGLASS
-    fill: IRON_BLOCK
-    clear: WATER_BUCKET
+  root:
+    header: NETHER_STAR
+    bedrock: OBSIDIAN
+    sandbox: SAND
+    sheepout: WHITE_WOOL
+    display-info: REDSTONE_LAMP
+  box-main:
     target: TARGET
     change: LIME_DYE
     set: WRITABLE_BOOK
     reset: BARRIER
     display-toggle: REDSTONE_TORCH
     wins-info: PAPER
+  bedrock:
+    main:
+      header: OBSIDIAN
+      teleport: ENDER_PEARL
+      main-user: PLAYER_HEAD
+      toplock: IRON_BARS
+      block-range: SPYGLASS
+      fill: IRON_BLOCK
+      clear: WATER_BUCKET
+  sandbox:
+    main:
+      header: SANDSTONE
+      teleport: ENDER_PEARL
+      main-user: PLAYER_HEAD
+      timer: CLOCK
+      stop: BARRIER
+      fill: SAND
+      clear: WATER_BUCKET
   target:
     header: TARGET
     confirm: LIME_CONCRETE
@@ -40,15 +57,24 @@ amounts:
   plus-ten: 10
 
 layout:
-  main:
+  root:
+    size: 27
+    header: 4
+    bedrock: 11
+    sandbox: 13
+    sheepout: 15
+    display-info: 22
+    close: 26
+  box-main:
     size: 27
     header: 4
     teleport: 10
     main-user: 11
-    toplock: 12
-    block-range: 13
+    action-three: 12
+    action-four: 13
     fill: 14
     clear: 15
+    back: 18
     target: 19
     change: 20
     set: 21

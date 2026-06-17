@@ -1,15 +1,30 @@
-win-markers:
-  - bedrock_win
+boxes:
+  bedrock:
+    win-markers:
+      - bedrock_win
+    display:
+      scoreboard:
+        display-name: "&6Bedrock Wins"
+        entry-name: "&eWins"
+      bossbar:
+        title-label: "Bedrock Wins"
+  sandbox:
+    win-markers:
+      - "[s2e-sand-box] win-up"
+      - "win-up"
+    display:
+      scoreboard:
+        display-name: "&6Sandbox Wins"
+        entry-name: "&eWins"
+      bossbar:
+        title-label: "Sandbox Wins"
 
 display:
   mode: BOSSBAR
   scoreboard:
     objective-name: bedrock_wins
-    display-name: "&6Bedrock Wins"
-    entry-name: "&eWins"
     display-slot: SIDEBAR
   bossbar:
-    title-label: "Wins"
     color: YELLOW
     style: SOLID
     text-colors:

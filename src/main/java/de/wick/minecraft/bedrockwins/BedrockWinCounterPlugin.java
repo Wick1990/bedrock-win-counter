@@ -44,8 +44,6 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
     public enum MenuValueType {
         TARGET("target", 10, 0),
         CHANGE("change", 0, Integer.MIN_VALUE),
-        ADD("add", 1, 1),
-        REMOVE("remove", 1, 1),
         SET("set", 0, Integer.MIN_VALUE);
 
         private final String key;
@@ -85,8 +83,146 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         }
     }
 
-    private final Set<String> winMarkers = new HashSet<>();
-    private final Map<UUID, EnumMap<MenuValueType, Integer>> menuValues = new HashMap<>();
+    public enum BoxType {
+        BEDROCK(
+                "bedrock",
+                "Bedrock",
+                "Bedrock-Wins",
+                "bedrock",
+                "bedrockwins",
+                "bedrockwins.menu.use",
+                "bedrockwins.view",
+                "bedrockwins.admin",
+                true,
+                List.of("bedrock_win")
+        ),
+        SANDBOX(
+                "sandbox",
+                "Sandbox",
+                "Sandbox-Wins",
+                "sandbox",
+                "sandboxwins",
+                "sandboxwins.menu.use",
+                "sandboxwins.view",
+                "sandboxwins.admin",
+                true,
+                List.of("[s2e-sand-box] win-up", "win-up")
+        ),
+        SHEEP_OUT(
+                "sheepout",
+                "Sheep Out",
+                "Sheep-Out-Wins",
+                "sheepout",
+                "sheepoutwins",
+                "sheepout.menu.use",
+                "sheepout.view",
+                "sheepout.admin",
+                false,
+                List.of()
+        );
+
+        private final String key;
+        private final String displayName;
+        private final String winsLabel;
+        private final String boxCommand;
+        private final String winsCommand;
+        private final String menuPermission;
+        private final String viewPermission;
+        private final String adminPermission;
+        private final boolean tracksWins;
+        private final List<String> defaultMarkers;
+
+        BoxType(
+                String key,
+                String displayName,
+                String winsLabel,
+                String boxCommand,
+                String winsCommand,
+                String menuPermission,
+                String viewPermission,
+                String adminPermission,
+                boolean tracksWins,
+                List<String> defaultMarkers
+        ) {
+            this.key = key;
+            this.displayName = displayName;
+            this.winsLabel = winsLabel;
+            this.boxCommand = boxCommand;
+            this.winsCommand = winsCommand;
+            this.menuPermission = menuPermission;
+            this.viewPermission = viewPermission;
+            this.adminPermission = adminPermission;
+            this.tracksWins = tracksWins;
+            this.defaultMarkers = defaultMarkers;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getWinsLabel() {
+            return winsLabel;
+        }
+
+        public String getBoxCommand() {
+            return boxCommand;
+        }
+
+        public String getWinsCommand() {
+            return winsCommand;
+        }
+
+        public String getMenuPermission() {
+            return menuPermission;
+        }
+
+        public String getViewPermission() {
+            return viewPermission;
+        }
+
+        public String getAdminPermission() {
+            return adminPermission;
+        }
+
+        public boolean tracksWins() {
+            return tracksWins;
+        }
+
+        public List<String> getDefaultMarkers() {
+            return defaultMarkers;
+        }
+
+        public static BoxType fromKey(String value) {
+            if (value == null) {
+                return null;
+            }
+
+            for (BoxType boxType : values()) {
+                if (boxType.key.equalsIgnoreCase(value)) {
+                    return boxType;
+                }
+            }
+
+            return null;
+        }
+
+        public static List<BoxType> trackedBoxes() {
+            return List.of(BEDROCK, SANDBOX);
+        }
+    }
+
+    private static final class CounterState {
+        private int wins;
+        private Integer targetWins;
+    }
+
+    private final EnumMap<BoxType, CounterState> counterStates = new EnumMap<>(BoxType.class);
+    private final EnumMap<BoxType, Set<String>> winMarkers = new EnumMap<>(BoxType.class);
+    private final Map<UUID, EnumMap<BoxType, EnumMap<MenuValueType, Integer>>> menuValues = new HashMap<>();
 
     private File dataFile;
     private File langFile;
@@ -95,17 +231,23 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
     private FileConfiguration dataConfig;
     private FileConfiguration langConfig;
     private FileConfiguration menuConfig;
-    private int wins;
-    private Integer targetWins;
     private long latestLogPosition;
     private int logWatcherTaskId = -1;
     private Objective objective;
     private DisplaySlot scoreboardDisplaySlot;
-    private String scoreboardEntryName;
+    private String lastScoreboardEntryName;
     private BossBar bossBar;
+    private BoxType displayedBox = BoxType.BEDROCK;
     private DisplayMode activeDisplayMode = DisplayMode.NONE;
     private DisplayMode configuredDisplayMode = DisplayMode.BOSSBAR;
     private DisplayMode lastNonNoneDisplayMode = DisplayMode.BOSSBAR;
+
+    public BedrockWinCounterPlugin() {
+        for (BoxType boxType : BoxType.trackedBoxes()) {
+            counterStates.put(boxType, new CounterState());
+            winMarkers.put(boxType, new HashSet<>());
+        }
+    }
 
     @Override
     public void onEnable() {
@@ -114,11 +256,17 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         loadDataFile();
         reloadPluginState();
 
-        BedrockWinsCommand command = new BedrockWinsCommand(this);
+        BedrockWinsCommand bedrockCommand = new BedrockWinsCommand(this, BoxType.BEDROCK);
+        BedrockWinsCommand sandboxCommand = new BedrockWinsCommand(this, BoxType.SANDBOX);
         BedrockMenuGui menuGui = new BedrockMenuGui(this);
+
         if (getCommand("bedrockwins") != null) {
-            getCommand("bedrockwins").setExecutor(command);
-            getCommand("bedrockwins").setTabCompleter(command);
+            getCommand("bedrockwins").setExecutor(bedrockCommand);
+            getCommand("bedrockwins").setTabCompleter(bedrockCommand);
+        }
+        if (getCommand("sandboxwins") != null) {
+            getCommand("sandboxwins").setExecutor(sandboxCommand);
+            getCommand("sandboxwins").setTabCompleter(sandboxCommand);
         }
         if (getCommand("bedrockmenu") != null) {
             getCommand("bedrockmenu").setExecutor(new BedrockMenuCommand(this, menuGui));
@@ -126,7 +274,13 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
 
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(menuGui, this);
-        getLogger().info("Listening for win markers: " + String.join(", ", winMarkers));
+
+        for (BoxType boxType : BoxType.trackedBoxes()) {
+            getLogger().info(
+                    "Listening for " + boxType.getDisplayName() + " win markers: " + String.join(", ", winMarkers.get(boxType))
+            );
+        }
+
         startLatestLogWatcher();
     }
 
@@ -142,48 +296,48 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         loadSupportFiles();
         loadMarkers();
         configuredDisplayMode = parseDisplayMode(getConfig().getString("display.mode", "BOSSBAR"), DisplayMode.BOSSBAR);
-        activeDisplayMode = parseDisplayMode(dataConfig.getString("display.mode", configuredDisplayMode.name()), configuredDisplayMode);
-        lastNonNoneDisplayMode = parseDisplayMode(
-                dataConfig.getString("display.last-non-none-mode", configuredDisplayMode.name()),
-                configuredDisplayMode
-        );
+        if (lastNonNoneDisplayMode == DisplayMode.NONE) {
+            lastNonNoneDisplayMode = configuredDisplayMode;
+        }
         setupDisplays();
         persistDisplayState();
     }
 
-    public int getWins() {
-        return wins;
+    public int getWins(BoxType boxType) {
+        return getCounterState(boxType).wins;
     }
 
-    public Integer getTargetWins() {
-        return targetWins;
+    public Integer getTargetWins(BoxType boxType) {
+        return getCounterState(boxType).targetWins;
     }
 
-    public void addWins(int amount) {
-        setWins(this.wins + amount);
+    public void addWins(BoxType boxType, int amount) {
+        setWins(boxType, getWins(boxType) + amount);
     }
 
-    public void setWins(int wins) {
-        this.wins = wins;
-        dataConfig.set("wins", this.wins);
+    public void setWins(BoxType boxType, int wins) {
+        CounterState counterState = getCounterState(boxType);
+        counterState.wins = wins;
         saveDataFile();
         updateDisplays();
     }
 
-    public void setTargetWins(Integer targetWins) {
+    public void setTargetWins(BoxType boxType, Integer targetWins) {
+        CounterState counterState = getCounterState(boxType);
         if (targetWins != null && targetWins < 0) {
             targetWins = 0;
         }
 
-        this.targetWins = targetWins;
-        dataConfig.set("target-wins", this.targetWins);
+        counterState.targetWins = targetWins;
         saveDataFile();
         updateDisplays();
     }
 
-    public void incrementFromMarker(String marker) {
-        setWins(this.wins + 1);
-        getLogger().info("Counted Bedrock win from marker: " + marker + " (total: " + this.wins + ")");
+    public void incrementFromMarker(BoxType boxType, String marker) {
+        addWins(boxType, 1);
+        getLogger().info(
+                "Counted " + boxType.getDisplayName() + " win from marker: " + marker + " (total: " + getWins(boxType) + ")"
+        );
     }
 
     public String format(String message) {
@@ -265,8 +419,15 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         return activeDisplayMode;
     }
 
-    public void setDisplayMode(DisplayMode mode) {
+    public BoxType getDisplayedBox() {
+        return displayedBox;
+    }
+
+    public void setDisplayMode(BoxType boxType, DisplayMode mode) {
+        BoxType resolvedBox = boxType == null ? BoxType.BEDROCK : boxType;
         DisplayMode targetMode = mode == null ? DisplayMode.NONE : mode;
+        displayedBox = resolvedBox;
+
         if (targetMode != DisplayMode.NONE) {
             lastNonNoneDisplayMode = targetMode;
         }
@@ -276,42 +437,57 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         persistDisplayState();
     }
 
-    public void toggleDisplay() {
-        if (activeDisplayMode == DisplayMode.NONE) {
-            setDisplayMode(lastNonNoneDisplayMode == DisplayMode.NONE ? configuredDisplayMode : lastNonNoneDisplayMode);
+    public void toggleDisplay(BoxType boxType) {
+        BoxType resolvedBox = boxType == null ? BoxType.BEDROCK : boxType;
+        if (activeDisplayMode == DisplayMode.NONE || displayedBox != resolvedBox) {
+            setDisplayMode(resolvedBox, lastNonNoneDisplayMode == DisplayMode.NONE ? configuredDisplayMode : lastNonNoneDisplayMode);
             return;
         }
 
-        setDisplayMode(DisplayMode.NONE);
+        setDisplayMode(resolvedBox, DisplayMode.NONE);
     }
 
     public String getDisplayModeLabel() {
         return activeDisplayMode.name().toLowerCase(Locale.ROOT);
     }
 
-    public String getWinsDisplay() {
-        if (targetWins == null) {
-            return Integer.toString(wins);
+    public String getDisplaySummary() {
+        if (activeDisplayMode == DisplayMode.NONE) {
+            return "off";
         }
 
-        return wins + "/" + targetWins;
+        return displayedBox.getDisplayName() + " / " + getDisplayModeLabel();
     }
 
-    public int initializeMenuValue(Player player, MenuValueType type) {
-        return setMenuValue(player, type, type.getDefaultValue());
+    public String getWinsDisplay(BoxType boxType) {
+        Integer targetWins = getTargetWins(boxType);
+        if (targetWins == null) {
+            return Integer.toString(getWins(boxType));
+        }
+
+        return getWins(boxType) + "/" + targetWins;
     }
 
-    public int adjustMenuValue(Player player, MenuValueType type, int delta) {
-        int currentValue = getMenuValue(player, type);
-        return setMenuValue(player, type, currentValue + delta);
+    public int initializeMenuValue(Player player, BoxType boxType, MenuValueType type) {
+        return setMenuValue(player, boxType, type, type.getDefaultValue());
     }
 
-    public int resetMenuValue(Player player, MenuValueType type) {
-        return setMenuValue(player, type, type.getDefaultValue());
+    public int adjustMenuValue(Player player, BoxType boxType, MenuValueType type, int delta) {
+        int currentValue = getMenuValue(player, boxType, type);
+        return setMenuValue(player, boxType, type, currentValue + delta);
     }
 
-    public int getMenuValue(Player player, MenuValueType type) {
-        EnumMap<MenuValueType, Integer> valuesByType = menuValues.get(player.getUniqueId());
+    public int resetMenuValue(Player player, BoxType boxType, MenuValueType type) {
+        return setMenuValue(player, boxType, type, type.getDefaultValue());
+    }
+
+    public int getMenuValue(Player player, BoxType boxType, MenuValueType type) {
+        EnumMap<BoxType, EnumMap<MenuValueType, Integer>> valuesByBox = menuValues.get(player.getUniqueId());
+        if (valuesByBox == null) {
+            return type.getDefaultValue();
+        }
+
+        EnumMap<MenuValueType, Integer> valuesByType = valuesByBox.get(boxType);
         if (valuesByType == null) {
             return type.getDefaultValue();
         }
@@ -319,9 +495,13 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         return valuesByType.getOrDefault(type, type.getDefaultValue());
     }
 
-    public int setMenuValue(Player player, MenuValueType type, int value) {
-        EnumMap<MenuValueType, Integer> valuesByType = menuValues.computeIfAbsent(
+    public int setMenuValue(Player player, BoxType boxType, MenuValueType type, int value) {
+        EnumMap<BoxType, EnumMap<MenuValueType, Integer>> valuesByBox = menuValues.computeIfAbsent(
                 player.getUniqueId(),
+                ignored -> new EnumMap<>(BoxType.class)
+        );
+        EnumMap<MenuValueType, Integer> valuesByType = valuesByBox.computeIfAbsent(
+                boxType,
                 ignored -> new EnumMap<>(MenuValueType.class)
         );
         int clampedValue = type.clamp(value);
@@ -329,28 +509,83 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         return clampedValue;
     }
 
+    public boolean canOpenAnyMenu(Player player) {
+        return hasMenuAccess(player, BoxType.BEDROCK) || hasMenuAccess(player, BoxType.SANDBOX);
+    }
+
+    public boolean hasMenuAccess(Player player, BoxType boxType) {
+        return player.hasPermission(boxType.getMenuPermission()) || player.hasPermission(boxType.getAdminPermission());
+    }
+
+    public boolean hasViewAccess(CommandSender sender, BoxType boxType) {
+        if (!(sender instanceof Player)) {
+            return true;
+        }
+
+        return sender.hasPermission(boxType.getViewPermission()) || sender.hasPermission(boxType.getAdminPermission());
+    }
+
+    public boolean hasAdminAccess(CommandSender sender, BoxType boxType) {
+        if (!(sender instanceof Player)) {
+            return true;
+        }
+
+        return sender.hasPermission(boxType.getAdminPermission());
+    }
+
+    public String getCounterMessageLabel(BoxType boxType) {
+        return boxType.getWinsLabel();
+    }
+
+    public String getCounterDisplayName(BoxType boxType) {
+        return boxType.getDisplayName();
+    }
+
+    public String getBoxCommand(BoxType boxType) {
+        return boxType.getBoxCommand();
+    }
+
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (bossBar != null && activeDisplayMode == DisplayMode.BOSSBAR && event.getPlayer().hasPermission("bedrockwins.view")) {
+        if (bossBar != null
+                && activeDisplayMode == DisplayMode.BOSSBAR
+                && hasViewAccess(event.getPlayer(), displayedBox)) {
             bossBar.addPlayer(event.getPlayer());
         }
     }
 
     private void loadMarkers() {
-        winMarkers.clear();
-        List<String> configuredMarkers = getConfig().getStringList("win-markers");
-        if (configuredMarkers.isEmpty()) {
-            configuredMarkers = List.of("bedrock_win");
+        for (BoxType boxType : BoxType.trackedBoxes()) {
+            winMarkers.get(boxType).clear();
         }
 
-        for (String marker : configuredMarkers) {
-            if (marker == null) {
-                continue;
+        boolean hasPerBoxMarkers = false;
+        for (BoxType boxType : BoxType.trackedBoxes()) {
+            String path = "boxes." + boxType.getKey() + ".win-markers";
+            List<String> configuredMarkers = getConfig().getStringList(path);
+            if (!configuredMarkers.isEmpty()) {
+                hasPerBoxMarkers = true;
+                configuredMarkers.forEach(marker -> addNormalizedMarker(boxType, marker));
             }
+        }
 
-            String normalized = marker.trim().toLowerCase(Locale.ROOT);
-            if (!normalized.isEmpty()) {
-                winMarkers.add(normalized);
+        if (!hasPerBoxMarkers) {
+            List<String> legacyMarkers = getConfig().getStringList("win-markers");
+            if (legacyMarkers.isEmpty()) {
+                for (BoxType boxType : BoxType.trackedBoxes()) {
+                    boxType.getDefaultMarkers().forEach(marker -> addNormalizedMarker(boxType, marker));
+                }
+            } else {
+                for (String marker : legacyMarkers) {
+                    BoxType inferredBox = inferBoxTypeFromLegacyMarker(marker);
+                    addNormalizedMarker(inferredBox, marker);
+                }
+            }
+        }
+
+        for (BoxType boxType : BoxType.trackedBoxes()) {
+            if (winMarkers.get(boxType).isEmpty()) {
+                boxType.getDefaultMarkers().forEach(marker -> addNormalizedMarker(boxType, marker));
             }
         }
     }
@@ -362,17 +597,59 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
 
         dataFile = new File(getDataFolder(), "data.yml");
         dataConfig = YamlConfiguration.loadConfiguration(dataFile);
-        wins = dataConfig.getInt("wins", 0);
-        targetWins = dataConfig.isSet("target-wins") ? dataConfig.getInt("target-wins") : null;
+
+        for (BoxType boxType : BoxType.trackedBoxes()) {
+            CounterState counterState = getCounterState(boxType);
+            String basePath = "boxes." + boxType.getKey();
+
+            if (dataConfig.isSet(basePath + ".wins")) {
+                counterState.wins = dataConfig.getInt(basePath + ".wins");
+            } else if (boxType == BoxType.BEDROCK) {
+                counterState.wins = dataConfig.getInt("wins", 0);
+            } else {
+                counterState.wins = 0;
+            }
+
+            if (dataConfig.isSet(basePath + ".target-wins")) {
+                counterState.targetWins = dataConfig.getInt(basePath + ".target-wins");
+            } else if (boxType == BoxType.BEDROCK && dataConfig.isSet("target-wins")) {
+                counterState.targetWins = dataConfig.getInt("target-wins");
+            } else {
+                counterState.targetWins = null;
+            }
+        }
+
+        displayedBox = parseBoxType(dataConfig.getString("display.box"), BoxType.BEDROCK);
+        activeDisplayMode = parseDisplayMode(dataConfig.getString("display.mode", "BOSSBAR"), DisplayMode.BOSSBAR);
+        lastNonNoneDisplayMode = parseDisplayMode(
+                dataConfig.getString("display.last-non-none-mode", "BOSSBAR"),
+                DisplayMode.BOSSBAR
+        );
 
         if (!dataFile.exists()) {
-            dataConfig.set("wins", wins);
-            dataConfig.set("target-wins", targetWins);
             saveDataFile();
         }
     }
 
     private void saveDataFile() {
+        if (dataConfig == null || dataFile == null) {
+            return;
+        }
+
+        dataConfig.set("wins", null);
+        dataConfig.set("target-wins", null);
+
+        for (BoxType boxType : BoxType.trackedBoxes()) {
+            CounterState counterState = getCounterState(boxType);
+            String basePath = "boxes." + boxType.getKey();
+            dataConfig.set(basePath + ".wins", counterState.wins);
+            dataConfig.set(basePath + ".target-wins", counterState.targetWins);
+        }
+
+        dataConfig.set("display.box", displayedBox.getKey());
+        dataConfig.set("display.mode", activeDisplayMode.name());
+        dataConfig.set("display.last-non-none-mode", lastNonNoneDisplayMode.name());
+
         try {
             dataConfig.save(dataFile);
         } catch (IOException exception) {
@@ -489,11 +766,16 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
 
     private void handleLatestLogLine(String rawLine) {
         String message = extractLogMessage(rawLine);
-        if (!isWinMarker(message)) {
+        if (isOwnPluginLogLine(message)) {
             return;
         }
 
-        Bukkit.getScheduler().runTask(this, () -> incrementFromMarker(message));
+        BoxType boxType = findMatchingBox(message);
+        if (boxType == null) {
+            return;
+        }
+
+        Bukkit.getScheduler().runTask(this, () -> incrementFromMarker(boxType, message));
     }
 
     private String extractLogMessage(String rawLine) {
@@ -506,6 +788,11 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
     }
 
     private void persistDisplayState() {
+        if (dataConfig == null) {
+            return;
+        }
+
+        dataConfig.set("display.box", displayedBox.getKey());
         dataConfig.set("display.mode", activeDisplayMode.name());
         dataConfig.set("display.last-non-none-mode", lastNonNoneDisplayMode.name());
         saveDataFile();
@@ -521,7 +808,7 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
     private void setupScoreboard() {
         objective = null;
         scoreboardDisplaySlot = null;
-        scoreboardEntryName = colorize(getConfig().getString("display.scoreboard.entry-name", "&eWins"));
+        lastScoreboardEntryName = null;
 
         disableSidebarDisplay();
 
@@ -531,17 +818,16 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         }
 
         String objectiveName = getConfig().getString("display.scoreboard.objective-name", "bedrock_wins");
-        String displayName = colorize(getConfig().getString("display.scoreboard.display-name", "&6Bedrock Wins"));
         String displaySlotName = getConfig().getString("display.scoreboard.display-slot", "SIDEBAR");
 
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
         Objective existingObjective = scoreboard.getObjective(objectiveName);
 
         if (existingObjective == null) {
-            objective = scoreboard.registerNewObjective(objectiveName, Criteria.DUMMY, displayName);
+            objective = scoreboard.registerNewObjective(objectiveName, Criteria.DUMMY, getScoreboardDisplayName(displayedBox));
         } else {
             objective = existingObjective;
-            objective.setDisplayName(displayName);
+            objective.setDisplayName(getScoreboardDisplayName(displayedBox));
         }
 
         if (displaySlotName != null && !displaySlotName.equalsIgnoreCase("NONE")) {
@@ -584,12 +870,21 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
     }
 
     private void updateScoreboard() {
-        if (objective == null || activeDisplayMode != DisplayMode.SIDEBAR) {
+        if (objective == null) {
             return;
         }
 
-        objective.setDisplaySlot(scoreboardDisplaySlot);
-        objective.getScore(scoreboardEntryName).setScore(wins);
+        objective.setDisplayName(getScoreboardDisplayName(displayedBox));
+        String entryName = getScoreboardEntryName(displayedBox);
+        if (lastScoreboardEntryName != null && !lastScoreboardEntryName.equals(entryName)) {
+            objective.getScoreboard().resetScores(lastScoreboardEntryName);
+        }
+        lastScoreboardEntryName = entryName;
+        objective.getScore(entryName).setScore(getWins(displayedBox));
+
+        if (activeDisplayMode == DisplayMode.SIDEBAR && scoreboardDisplaySlot != null) {
+            objective.setDisplaySlot(scoreboardDisplaySlot);
+        }
     }
 
     private void updateBossBar() {
@@ -604,7 +899,7 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
     }
 
     private void enableSidebarDisplay() {
-        if (objective == null) {
+        if (objective == null || scoreboardDisplaySlot == null) {
             return;
         }
 
@@ -640,6 +935,7 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         disableSidebarDisplay();
         if (bossBar != null) {
             bossBar.setVisible(false);
+            bossBar.removeAll();
         }
     }
 
@@ -655,18 +951,10 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         return resolved;
     }
 
-    private String formatWins(String value) {
-        return colorize((value == null ? "" : value).replace("%wins%", Integer.toString(wins)));
-    }
-
     private String buildBossBarTitle() {
-        String label = getConfig().getString("display.bossbar.title-label", "Wins");
+        String label = getBossBarTitleLabel(displayedBox);
         String color = getBossBarTextColor();
-        return colorize(color + label + ": " + getWinsDisplay());
-    }
-
-    private boolean isWinMarker(String message) {
-        return winMarkers.contains(message.trim().toLowerCase(Locale.ROOT));
+        return colorize(color + label + ": " + getWinsDisplay(displayedBox));
     }
 
     private DisplayMode parseDisplayMode(String value, DisplayMode fallback) {
@@ -679,6 +967,11 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         } catch (IllegalArgumentException exception) {
             return fallback;
         }
+    }
+
+    private BoxType parseBoxType(String value, BoxType fallback) {
+        BoxType parsed = BoxType.fromKey(value);
+        return parsed == null ? fallback : parsed;
     }
 
     private BarColor parseBarColor(String value) {
@@ -705,7 +998,16 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         }
     }
 
+    private String getBossBarTitleLabel(BoxType boxType) {
+        String path = "boxes." + boxType.getKey() + ".display.bossbar.title-label";
+        String legacy = boxType == BoxType.BEDROCK
+                ? getConfig().getString("display.bossbar.title-label", "Bedrock Wins")
+                : boxType.getDisplayName() + " Wins";
+        return getConfig().getString(path, legacy);
+    }
+
     private String getBossBarTextColor() {
+        int wins = getWins(displayedBox);
         if (wins < 0) {
             return getConfig().getString("display.bossbar.text-colors.negative", "&c");
         }
@@ -718,6 +1020,7 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
     }
 
     private BarColor getBossBarColorForWins() {
+        int wins = getWins(displayedBox);
         if (wins < 0) {
             return BarColor.RED;
         }
@@ -734,11 +1037,12 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
             return 1.0D;
         }
 
+        Integer targetWins = getTargetWins(displayedBox);
         if (targetWins == null || targetWins <= 0) {
             return 1.0D;
         }
 
-        double progress = (double) wins / (double) targetWins;
+        double progress = (double) getWins(displayedBox) / (double) targetWins;
         if (progress < 0.0D) {
             return 0.0D;
         }
@@ -756,11 +1060,83 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.hasPermission("bedrockwins.view")) {
+            if (hasViewAccess(player, displayedBox)) {
                 bossBar.addPlayer(player);
             } else {
                 bossBar.removePlayer(player);
             }
         }
+    }
+
+    private String getScoreboardDisplayName(BoxType boxType) {
+        String path = "boxes." + boxType.getKey() + ".display.scoreboard.display-name";
+        String legacy = boxType == BoxType.BEDROCK
+                ? getConfig().getString("display.scoreboard.display-name", "&6Bedrock Wins")
+                : "&6Sandbox Wins";
+        return colorize(getConfig().getString(path, legacy));
+    }
+
+    private String getScoreboardEntryName(BoxType boxType) {
+        String path = "boxes." + boxType.getKey() + ".display.scoreboard.entry-name";
+        String legacy = boxType == BoxType.BEDROCK
+                ? getConfig().getString("display.scoreboard.entry-name", "&eWins")
+                : "&eSandbox";
+        return colorize(getConfig().getString(path, legacy));
+    }
+
+    private CounterState getCounterState(BoxType boxType) {
+        CounterState counterState = counterStates.get(boxType);
+        if (counterState == null) {
+            throw new IllegalArgumentException("Unsupported counter type: " + boxType);
+        }
+        return counterState;
+    }
+
+    private void addNormalizedMarker(BoxType boxType, String marker) {
+        if (marker == null) {
+            return;
+        }
+
+        String normalized = marker.trim().toLowerCase(Locale.ROOT);
+        if (normalized.isEmpty()) {
+            return;
+        }
+
+        winMarkers.get(boxType).add(normalized);
+    }
+
+    private BoxType inferBoxTypeFromLegacyMarker(String marker) {
+        String normalized = marker == null ? "" : marker.trim().toLowerCase(Locale.ROOT);
+        if (normalized.contains("sand") || normalized.contains("win-up")) {
+            return BoxType.SANDBOX;
+        }
+
+        return BoxType.BEDROCK;
+    }
+
+    private boolean isOwnPluginLogLine(String message) {
+        String normalizedMessage = message == null ? "" : message.trim().toLowerCase(Locale.ROOT);
+        if (normalizedMessage.isEmpty()) {
+            return false;
+        }
+
+        return normalizedMessage.startsWith("[bedrockwincounter]");
+    }
+
+    private BoxType findMatchingBox(String message) {
+        String normalizedMessage = message == null ? "" : message.trim().toLowerCase(Locale.ROOT);
+        if (normalizedMessage.isEmpty()) {
+            return null;
+        }
+
+        for (BoxType boxType : BoxType.trackedBoxes()) {
+            for (String marker : winMarkers.get(boxType)) {
+                if (normalizedMessage.equals(marker) || normalizedMessage.endsWith(marker)) {
+                    return boxType;
+                }
+            }
+        }
+
+        return null;
     }
 }

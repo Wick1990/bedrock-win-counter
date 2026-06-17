@@ -21,7 +21,8 @@ public final class BedrockMenuGui implements Listener {
     private static final int DEFAULT_MENU_SIZE = 27;
 
     private enum Screen {
-        MAIN("main"),
+        ROOT("root"),
+        BOX_MAIN("box-main"),
         TARGET("target"),
         CHANGE("change"),
         SET("set");
@@ -37,7 +38,7 @@ public final class BedrockMenuGui implements Listener {
         }
     }
 
-    private record BedrockMenuHolder(Screen screen) implements InventoryHolder {
+    private record BedrockMenuHolder(Screen screen, BedrockWinCounterPlugin.BoxType boxType) implements InventoryHolder {
         @Override
         public Inventory getInventory() {
             return null;
@@ -52,144 +53,63 @@ public final class BedrockMenuGui implements Listener {
 
     public void openMainMenu(Player player) {
         Inventory inventory = createInventory(
-                Screen.MAIN,
-                plugin.localize("menu.main.title", "&8Bedrock Menue"),
-                getConfiguredSize(Screen.MAIN, DEFAULT_MENU_SIZE)
+                Screen.ROOT,
+                null,
+                plugin.localize("menu.root.title", "&8Box Hub"),
+                getConfiguredSize(Screen.ROOT, DEFAULT_MENU_SIZE)
         );
         fillInventory(inventory);
 
-        setConfiguredItem(inventory, Screen.MAIN, "header", 4, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.header", Material.OBSIDIAN),
+        setConfiguredItem(inventory, Screen.ROOT, "header", 4, createLocalizedItem(
+                plugin.getMenuMaterial("materials.root.header", Material.NETHER_STAR),
                 1,
-                "menu.main.header.name",
-                "&5&lBedrock Menue",
-                "menu.main.header.lore",
-                List.of()
+                "menu.root.header.name",
+                "&6&lBox Hub",
+                "menu.root.header.lore",
+                List.of("&7Waehle die gewuenschte Box.")
         ));
-        setConfiguredItem(inventory, Screen.MAIN, "teleport", 10, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.teleport", Material.ENDER_PEARL),
+        setConfiguredItem(inventory, Screen.ROOT, "bedrock", 11, createLocalizedItem(
+                plugin.getMenuMaterial("materials.root.bedrock", Material.OBSIDIAN),
                 1,
-                "menu.main.teleport.name",
-                "&bZur Box teleportieren",
-                "menu.main.teleport.lore",
-                List.of("&8Befehl: &7/bedrock tp")
-        ));
-        setConfiguredItem(inventory, Screen.MAIN, "main-user", 11, createLocalizedHead(
-                player,
-                "menu.main.main-user.name",
-                "&aMain User setzen",
-                "menu.main.main-user.lore",
+                "menu.root.bedrock.name",
+                "&5BedrockBox",
+                "menu.root.bedrock.lore",
                 List.of(
-                        "&7Setzt dich direkt als Main User.",
-                        "",
-                        "&8Befehl: &f/bedrock set_main_user %player%"
+                        "&7Oeffnet das Bedrock-Menue.",
+                        "&7Wins: &6%wins%"
                 ),
-                "%player%", player.getName()
+                "%wins%", plugin.getWinsDisplay(BedrockWinCounterPlugin.BoxType.BEDROCK)
         ));
-        setConfiguredItem(inventory, Screen.MAIN, "toplock", 12, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.toplock", Material.IRON_BARS),
+        setConfiguredItem(inventory, Screen.ROOT, "sandbox", 13, createLocalizedItem(
+                plugin.getMenuMaterial("materials.root.sandbox", Material.SAND),
                 1,
-                "menu.main.toplock.name",
-                "&7Toplock toggeln",
-                "menu.main.toplock.lore",
-                List.of("&8Befehl: &7/bedrock toplock")
-        ));
-        setConfiguredItem(inventory, Screen.MAIN, "block-range", 13, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.block-range", Material.SPYGLASS),
-                1,
-                "menu.main.block-range.name",
-                "&eBlock Range 20 setzen",
-                "menu.main.block-range.lore",
+                "menu.root.sandbox.name",
+                "&6Sandbox",
+                "menu.root.sandbox.lore",
                 List.of(
-                        "&7Setzt deine eigene",
-                        "&7Block-Interaction-Range auf 20.",
-                        "",
-                        "&8Befehl: &f/attribute %player% ... 20"
+                        "&7Oeffnet das Sandbox-Menue.",
+                        "&7Wins: &6%wins%"
                 ),
-                "%player%", player.getName()
+                "%wins%", plugin.getWinsDisplay(BedrockWinCounterPlugin.BoxType.SANDBOX)
         ));
-        setConfiguredItem(inventory, Screen.MAIN, "fill", 14, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.fill", Material.IRON_BLOCK),
+        setConfiguredItem(inventory, Screen.ROOT, "sheepout", 15, createLocalizedItem(
+                plugin.getMenuMaterial("materials.root.sheepout", Material.WHITE_WOOL),
                 1,
-                "menu.main.fill.name",
-                "&fBox fuellen",
-                "menu.main.fill.lore",
-                List.of("&8Befehl: &7/bedrock fill")
+                "menu.root.sheepout.name",
+                "&fSheep Out",
+                "menu.root.sheepout.lore",
+                List.of("&7Aktuell nur ein Platzhalter.")
         ));
-        setConfiguredItem(inventory, Screen.MAIN, "clear", 15, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.clear", Material.WATER_BUCKET),
+        setConfiguredItem(inventory, Screen.ROOT, "display-info", 22, createLocalizedItem(
+                plugin.getMenuMaterial("materials.root.display-info", Material.REDSTONE_LAMP),
                 1,
-                "menu.main.clear.name",
-                "&9Box leeren",
-                "menu.main.clear.lore",
-                List.of("&8Befehl: &7/bedrock clear")
+                "menu.root.display-info.name",
+                "&dAktive Anzeige",
+                "menu.root.display-info.lore",
+                List.of("&7Status: &f%mode%"),
+                "%mode%", plugin.getDisplaySummary()
         ));
-        setConfiguredItem(inventory, Screen.MAIN, "target", 19, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.target", Material.TARGET),
-                1,
-                "menu.main.target.name",
-                "&eWin-Ziel setzen",
-                "menu.main.target.lore",
-                List.of(
-                        "&7Oeffnet ein Untermenue.",
-                        "&7Dort stellst du den Zielwert",
-                        "&7mit +1, +5 und +10 ein."
-                )
-        ));
-        setConfiguredItem(inventory, Screen.MAIN, "change", 20, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.change", Material.LIME_DYE),
-                1,
-                "menu.main.change.name",
-                "&aWins aendern",
-                "menu.main.change.lore",
-                List.of(
-                        "&7Oeffnet ein Untermenue.",
-                        "&7Gruene Felder addieren Wins.",
-                        "&7Rote Felder ziehen direkt ab."
-                )
-        ));
-        setConfiguredItem(inventory, Screen.MAIN, "set", 21, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.set", Material.WRITABLE_BOOK),
-                1,
-                "menu.main.set.name",
-                "&6Wins set",
-                "menu.main.set.lore",
-                List.of(
-                        "&7Oeffnet ein Untermenue.",
-                        "&7Dort kannst du den Wert",
-                        "&7auch negativ einstellen."
-                )
-        ));
-        setConfiguredItem(inventory, Screen.MAIN, "reset", 22, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.reset", Material.BARRIER),
-                1,
-                "menu.main.reset.name",
-                "&4Wins reset",
-                "menu.main.reset.lore",
-                List.of("&8Befehl: &7/bedrockwins reset")
-        ));
-        setConfiguredItem(inventory, Screen.MAIN, "display-toggle", 23, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.display-toggle", Material.REDSTONE_TORCH),
-                1,
-                "menu.main.display-toggle.name",
-                "&dDisplay toggle",
-                "menu.main.display-toggle.lore",
-                List.of(
-                        "&8Befehl: &7/bedrockwins display toggle",
-                        "&7Aktuell: &f%mode%"
-                ),
-                "%mode%", plugin.getDisplayModeLabel()
-        ));
-        setConfiguredItem(inventory, Screen.MAIN, "wins-info", 24, createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.wins-info", Material.PAPER),
-                1,
-                "menu.main.wins-info.name",
-                "&fAktuelle Wins",
-                "menu.main.wins-info.lore",
-                List.of("&7Stand: &6%wins%"),
-                "%wins%", plugin.getWinsDisplay()
-        ));
-        setConfiguredItem(inventory, Screen.MAIN, "close", 26, createLocalizedItem(
+        setConfiguredItem(inventory, Screen.ROOT, "close", 26, createLocalizedItem(
                 plugin.getMenuMaterial("materials.shared.close", Material.BARRIER),
                 1,
                 "menu.shared.close.name",
@@ -201,11 +121,138 @@ public final class BedrockMenuGui implements Listener {
         player.openInventory(inventory);
     }
 
-    public void openTargetMenu(Player player) {
-        int currentValue = plugin.getMenuValue(player, BedrockWinCounterPlugin.MenuValueType.TARGET);
+    public void openBoxMenu(Player player, BedrockWinCounterPlugin.BoxType boxType) {
+        if (boxType == null || !boxType.tracksWins()) {
+            plugin.sendLocalized(
+                    player,
+                    "messages.box-coming-soon",
+                    "&e%box% ist aktuell nur ein Platzhalter.",
+                    "%box%", boxType == null ? "Diese Box" : boxType.getDisplayName()
+            );
+            return;
+        }
+
+        Inventory inventory = createInventory(
+                Screen.BOX_MAIN,
+                boxType,
+                plugin.localize(
+                        "menu.box-main.title",
+                        "&8%box% Menue",
+                        "%box%", boxType.getDisplayName()
+                ),
+                getConfiguredSize(Screen.BOX_MAIN, DEFAULT_MENU_SIZE)
+        );
+        fillInventory(inventory);
+
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "header", 4, createLocalizedItem(
+                getBoxMaterial(boxType, "main.header", boxType == BedrockWinCounterPlugin.BoxType.BEDROCK ? Material.OBSIDIAN : Material.SANDSTONE),
+                1,
+                boxPath(boxType, "main.header.name"),
+                boxType == BedrockWinCounterPlugin.BoxType.BEDROCK ? "&5&lBedrock Menue" : "&6&lSandbox Menue",
+                boxPath(boxType, "main.header.lore"),
+                List.of()
+        ));
+
+        if (boxType == BedrockWinCounterPlugin.BoxType.BEDROCK) {
+            populateBedrockActionItems(inventory, player);
+        } else if (boxType == BedrockWinCounterPlugin.BoxType.SANDBOX) {
+            populateSandboxActionItems(inventory, player);
+        }
+
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "back", 18, createLocalizedItem(
+                plugin.getMenuMaterial("materials.shared.back", Material.ARROW),
+                1,
+                "menu.shared.back.name",
+                "&7Zurueck",
+                "menu.shared.back.lore",
+                List.of()
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "target", 19, createLocalizedItem(
+                plugin.getMenuMaterial("materials.box-main.target", Material.TARGET),
+                1,
+                "menu.box-main.target.name",
+                "&eWin-Ziel setzen",
+                "menu.box-main.target.lore",
+                List.of(
+                        "&7Oeffnet ein Untermenue.",
+                        "&7Dort stellst du den Zielwert ein."
+                )
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "change", 20, createLocalizedItem(
+                plugin.getMenuMaterial("materials.box-main.change", Material.LIME_DYE),
+                1,
+                "menu.box-main.change.name",
+                "&aWins aendern",
+                "menu.box-main.change.lore",
+                List.of(
+                        "&7Gruene Felder addieren Wins.",
+                        "&7Rote Felder ziehen direkt ab."
+                )
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "set", 21, createLocalizedItem(
+                plugin.getMenuMaterial("materials.box-main.set", Material.WRITABLE_BOOK),
+                1,
+                "menu.box-main.set.name",
+                "&6Wins set",
+                "menu.box-main.set.lore",
+                List.of(
+                        "&7Setzt den Win-Stand direkt.",
+                        "&7Negative Werte sind erlaubt."
+                )
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "reset", 22, createLocalizedItem(
+                plugin.getMenuMaterial("materials.box-main.reset", Material.BARRIER),
+                1,
+                "menu.box-main.reset.name",
+                "&4Wins reset",
+                "menu.box-main.reset.lore",
+                List.of("&8Befehl: &7/%command% reset"),
+                "%command%", boxType.getWinsCommand()
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "display-toggle", 23, createLocalizedItem(
+                plugin.getMenuMaterial("materials.box-main.display-toggle", Material.REDSTONE_TORCH),
+                1,
+                "menu.box-main.display-toggle.name",
+                "&dDisplay toggle",
+                "menu.box-main.display-toggle.lore",
+                List.of(
+                        "&8Befehl: &7/%command% display toggle",
+                        "&7Aktuell: &f%mode%"
+                ),
+                "%command%", boxType.getWinsCommand(),
+                "%mode%", plugin.getDisplaySummary()
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "wins-info", 24, createLocalizedItem(
+                plugin.getMenuMaterial("materials.box-main.wins-info", Material.PAPER),
+                1,
+                "menu.box-main.wins-info.name",
+                "&fAktuelle Wins",
+                "menu.box-main.wins-info.lore",
+                List.of(
+                        "&7Box: &f%box%",
+                        "&7Stand: &6%wins%"
+                ),
+                "%box%", boxType.getDisplayName(),
+                "%wins%", plugin.getWinsDisplay(boxType)
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "close", 26, createLocalizedItem(
+                plugin.getMenuMaterial("materials.shared.close", Material.BARRIER),
+                1,
+                "menu.shared.close.name",
+                "&cSchliessen",
+                "menu.shared.close.lore",
+                List.of()
+        ));
+
+        player.openInventory(inventory);
+    }
+
+    public void openTargetMenu(Player player, BedrockWinCounterPlugin.BoxType boxType) {
+        int currentValue = plugin.getMenuValue(player, boxType, BedrockWinCounterPlugin.MenuValueType.TARGET);
         Inventory inventory = createInventory(
                 Screen.TARGET,
-                plugin.localize("menu.target.title", "&8Win-Ziel"),
+                boxType,
+                plugin.localize("menu.target.title", "&8%box% Ziel", "%box%", boxType.getDisplayName()),
                 getConfiguredSize(Screen.TARGET, DEFAULT_MENU_SIZE)
         );
         fillInventory(inventory);
@@ -228,11 +275,13 @@ public final class BedrockMenuGui implements Listener {
                 "&fAktueller Zielwert",
                 "menu.target.info.lore",
                 List.of(
+                        "&7Box: &f%box%",
                         "&7Ziel: &e%value%",
                         "&7Aktuelle Wins: &6%wins%"
                 ),
+                "%box%", boxType.getDisplayName(),
                 "%value%", Integer.toString(currentValue),
-                "%wins%", plugin.getWinsDisplay()
+                "%wins%", plugin.getWinsDisplay(boxType)
         ));
         setConfiguredItem(inventory, Screen.TARGET, "minus-ten", 10, createDeltaButton(
                 false,
@@ -309,10 +358,11 @@ public final class BedrockMenuGui implements Listener {
         player.openInventory(inventory);
     }
 
-    public void openChangeMenu(Player player) {
+    public void openChangeMenu(Player player, BedrockWinCounterPlugin.BoxType boxType) {
         Inventory inventory = createInventory(
                 Screen.CHANGE,
-                plugin.localize("menu.change.title", "&8Wins aendern"),
+                boxType,
+                plugin.localize("menu.change.title", "&8%box% Wins aendern", "%box%", boxType.getDisplayName()),
                 getConfiguredSize(Screen.CHANGE, DEFAULT_MENU_SIZE)
         );
         fillInventory(inventory);
@@ -335,11 +385,13 @@ public final class BedrockMenuGui implements Listener {
                 "&fDirekte Aenderung",
                 "menu.change.info.lore",
                 List.of(
+                        "&7Box: &f%box%",
                         "&aGruen = add",
                         "&cRot = remove",
                         "&7Stand: &6%wins%"
                 ),
-                "%wins%", plugin.getWinsDisplay()
+                "%box%", boxType.getDisplayName(),
+                "%wins%", plugin.getWinsDisplay(boxType)
         ));
         setConfiguredItem(inventory, Screen.CHANGE, "minus-ten", 10, createDeltaButton(
                 false,
@@ -397,11 +449,12 @@ public final class BedrockMenuGui implements Listener {
         player.openInventory(inventory);
     }
 
-    public void openSetMenu(Player player) {
-        int currentValue = plugin.getMenuValue(player, BedrockWinCounterPlugin.MenuValueType.SET);
+    public void openSetMenu(Player player, BedrockWinCounterPlugin.BoxType boxType) {
+        int currentValue = plugin.getMenuValue(player, boxType, BedrockWinCounterPlugin.MenuValueType.SET);
         Inventory inventory = createInventory(
                 Screen.SET,
-                plugin.localize("menu.set.title", "&8Wins set"),
+                boxType,
+                plugin.localize("menu.set.title", "&8%box% Wins set", "%box%", boxType.getDisplayName()),
                 getConfiguredSize(Screen.SET, DEFAULT_MENU_SIZE)
         );
         fillInventory(inventory);
@@ -424,11 +477,13 @@ public final class BedrockMenuGui implements Listener {
                 "&fAktueller Set-Wert",
                 "menu.set.info.lore",
                 List.of(
+                        "&7Box: &f%box%",
                         "&7Wert: &6%value%",
                         "&7Aktuelle Wins: &6%wins%"
                 ),
+                "%box%", boxType.getDisplayName(),
                 "%value%", Integer.toString(currentValue),
-                "%wins%", plugin.getWinsDisplay()
+                "%wins%", plugin.getWinsDisplay(boxType)
         ));
         setConfiguredItem(inventory, Screen.SET, "minus-ten", 10, createDeltaButton(
                 false,
@@ -523,10 +578,27 @@ public final class BedrockMenuGui implements Listener {
 
         Inventory inventory = event.getView().getTopInventory();
         switch (holder.screen()) {
-            case MAIN -> handleMainMenuClick(player, inventory, event.getSlot());
-            case TARGET -> handleTargetMenuClick(player, inventory, event.getSlot());
-            case CHANGE -> handleChangeMenuClick(player, inventory, event.getSlot());
-            case SET -> handleSetMenuClick(player, inventory, event.getSlot());
+            case ROOT -> handleRootMenuClick(player, inventory, event.getSlot());
+            case BOX_MAIN -> {
+                if (holder.boxType() != null) {
+                    handleBoxMainMenuClick(player, holder.boxType(), inventory, event.getSlot());
+                }
+            }
+            case TARGET -> {
+                if (holder.boxType() != null) {
+                    handleTargetMenuClick(player, holder.boxType(), inventory, event.getSlot());
+                }
+            }
+            case CHANGE -> {
+                if (holder.boxType() != null) {
+                    handleChangeMenuClick(player, holder.boxType(), inventory, event.getSlot());
+                }
+            }
+            case SET -> {
+                if (holder.boxType() != null) {
+                    handleSetMenuClick(player, holder.boxType(), inventory, event.getSlot());
+                }
+            }
         }
     }
 
@@ -537,102 +609,316 @@ public final class BedrockMenuGui implements Listener {
         }
     }
 
-    private void handleMainMenuClick(Player player, Inventory inventory, int slot) {
-        if (isConfiguredSlot(inventory, Screen.MAIN, "teleport", 10, slot)) {
-            runPlayerCommand(player, "bedrock tp");
-            return;
-        }
-        if (isConfiguredSlot(inventory, Screen.MAIN, "main-user", 11, slot)) {
-            runPlayerCommand(player, "bedrock set_main_user " + player.getName());
-            return;
-        }
-        if (isConfiguredSlot(inventory, Screen.MAIN, "toplock", 12, slot)) {
-            runPlayerCommand(player, "bedrock toplock");
-            return;
-        }
-        if (isConfiguredSlot(inventory, Screen.MAIN, "block-range", 13, slot)) {
-            runConsoleCommand("minecraft:attribute " + player.getName() + " minecraft:block_interaction_range base set 20");
-            return;
-        }
-        if (isConfiguredSlot(inventory, Screen.MAIN, "fill", 14, slot)) {
-            runPlayerCommand(player, "bedrock fill");
-            return;
-        }
-        if (isConfiguredSlot(inventory, Screen.MAIN, "clear", 15, slot)) {
-            runPlayerCommand(player, "bedrock clear");
-            return;
-        }
-        if (isConfiguredSlot(inventory, Screen.MAIN, "target", 19, slot)) {
-            plugin.initializeMenuValue(player, BedrockWinCounterPlugin.MenuValueType.TARGET);
-            openTargetMenu(player);
-            return;
-        }
-        if (isConfiguredSlot(inventory, Screen.MAIN, "change", 20, slot)) {
-            openChangeMenu(player);
-            return;
-        }
-        if (isConfiguredSlot(inventory, Screen.MAIN, "set", 21, slot)) {
-            plugin.initializeMenuValue(player, BedrockWinCounterPlugin.MenuValueType.SET);
-            openSetMenu(player);
-            return;
-        }
-        if (isConfiguredSlot(inventory, Screen.MAIN, "reset", 22, slot)) {
-            if (ensureWinsAdmin(player)) {
-                plugin.setWins(0);
-                plugin.sendLocalized(player, "messages.wins-reset", "&aBedrock-Wins wurden zurueckgesetzt.");
-                reopenMenu(player, Screen.MAIN);
+    private void populateBedrockActionItems(Inventory inventory, Player player) {
+        BedrockWinCounterPlugin.BoxType boxType = BedrockWinCounterPlugin.BoxType.BEDROCK;
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "teleport", 10, createLocalizedItem(
+                getBoxMaterial(boxType, "main.teleport", Material.ENDER_PEARL),
+                1,
+                boxPath(boxType, "main.teleport.name"),
+                "&bZur Box teleportieren",
+                boxPath(boxType, "main.teleport.lore"),
+                List.of("&8Befehl: &7/bedrock tp")
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "main-user", 11, createLocalizedHead(
+                player,
+                getBoxMaterial(boxType, "main.main-user", Material.PLAYER_HEAD),
+                boxPath(boxType, "main.main-user.name"),
+                "&aMain User setzen",
+                boxPath(boxType, "main.main-user.lore"),
+                List.of(
+                        "&7Setzt dich direkt als Main User.",
+                        "",
+                        "&8Befehl: &f/bedrock set_main_user %player%"
+                ),
+                "%player%", player.getName()
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "action-three", 12, createLocalizedItem(
+                getBoxMaterial(boxType, "main.toplock", Material.IRON_BARS),
+                1,
+                boxPath(boxType, "main.toplock.name"),
+                "&7Toplock toggeln",
+                boxPath(boxType, "main.toplock.lore"),
+                List.of("&8Befehl: &7/bedrock toplock")
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "action-four", 13, createLocalizedItem(
+                getBoxMaterial(boxType, "main.block-range", Material.SPYGLASS),
+                1,
+                boxPath(boxType, "main.block-range.name"),
+                "&eBlock Range 20 setzen",
+                boxPath(boxType, "main.block-range.lore"),
+                List.of(
+                        "&7Setzt deine eigene",
+                        "&7Block-Interaction-Range auf 20.",
+                        "",
+                        "&8Befehl: &f/attribute %player% ... 20"
+                ),
+                "%player%", player.getName()
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "fill", 14, createLocalizedItem(
+                getBoxMaterial(boxType, "main.fill", Material.IRON_BLOCK),
+                1,
+                boxPath(boxType, "main.fill.name"),
+                "&fBox fuellen",
+                boxPath(boxType, "main.fill.lore"),
+                List.of("&8Befehl: &7/bedrock fill")
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "clear", 15, createLocalizedItem(
+                getBoxMaterial(boxType, "main.clear", Material.WATER_BUCKET),
+                1,
+                boxPath(boxType, "main.clear.name"),
+                "&9Box leeren",
+                boxPath(boxType, "main.clear.lore"),
+                List.of("&8Befehl: &7/bedrock clear")
+        ));
+    }
+
+    private void populateSandboxActionItems(Inventory inventory, Player player) {
+        BedrockWinCounterPlugin.BoxType boxType = BedrockWinCounterPlugin.BoxType.SANDBOX;
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "teleport", 10, createLocalizedItem(
+                getBoxMaterial(boxType, "main.teleport", Material.ENDER_PEARL),
+                1,
+                boxPath(boxType, "main.teleport.name"),
+                "&bZur Sandbox teleportieren",
+                boxPath(boxType, "main.teleport.lore"),
+                List.of("&8Befehl: &7/sandbox tp")
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "main-user", 11, createLocalizedHead(
+                player,
+                getBoxMaterial(boxType, "main.main-user", Material.PLAYER_HEAD),
+                boxPath(boxType, "main.main-user.name"),
+                "&aMain User setzen",
+                boxPath(boxType, "main.main-user.lore"),
+                List.of(
+                        "&7Setzt dich direkt als Main User.",
+                        "",
+                        "&8Befehl: &f/sandbox set_main_user %player%"
+                ),
+                "%player%", player.getName()
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "action-three", 12, createLocalizedItem(
+                getBoxMaterial(boxType, "main.timer", Material.CLOCK),
+                1,
+                boxPath(boxType, "main.timer.name"),
+                "&eTimer starten",
+                boxPath(boxType, "main.timer.lore"),
+                List.of("&8Befehl: &7/sandbox timer 10")
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "action-four", 13, createLocalizedItem(
+                getBoxMaterial(boxType, "main.stop", Material.BARRIER),
+                1,
+                boxPath(boxType, "main.stop.name"),
+                "&cSandbox stoppen",
+                boxPath(boxType, "main.stop.lore"),
+                List.of("&8Befehl: &7/sandbox stop")
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "fill", 14, createLocalizedItem(
+                getBoxMaterial(boxType, "main.fill", Material.SAND),
+                1,
+                boxPath(boxType, "main.fill.name"),
+                "&6Sandbox fuellen",
+                boxPath(boxType, "main.fill.lore"),
+                List.of("&8Befehl: &7/sandbox fill")
+        ));
+        setConfiguredItem(inventory, Screen.BOX_MAIN, "clear", 15, createLocalizedItem(
+                getBoxMaterial(boxType, "main.clear", Material.WATER_BUCKET),
+                1,
+                boxPath(boxType, "main.clear.name"),
+                "&9Sandbox leeren",
+                boxPath(boxType, "main.clear.lore"),
+                List.of("&8Befehl: &7/sandbox clear")
+        ));
+    }
+
+    private void handleRootMenuClick(Player player, Inventory inventory, int slot) {
+        if (isConfiguredSlot(inventory, Screen.ROOT, "bedrock", 11, slot)) {
+            if (ensureMenuAccess(player, BedrockWinCounterPlugin.BoxType.BEDROCK)) {
+                openBoxMenu(player, BedrockWinCounterPlugin.BoxType.BEDROCK);
             }
             return;
         }
-        if (isConfiguredSlot(inventory, Screen.MAIN, "display-toggle", 23, slot)) {
-            if (ensureWinsAdmin(player)) {
-                plugin.toggleDisplay();
-                plugin.sendLocalized(
-                        player,
-                        "messages.display-toggled",
-                        "&aAnzeige umgeschaltet: &6%mode%",
-                        "%mode%", plugin.getDisplayModeLabel()
-                );
-                reopenMenu(player, Screen.MAIN);
+        if (isConfiguredSlot(inventory, Screen.ROOT, "sandbox", 13, slot)) {
+            if (ensureMenuAccess(player, BedrockWinCounterPlugin.BoxType.SANDBOX)) {
+                openBoxMenu(player, BedrockWinCounterPlugin.BoxType.SANDBOX);
             }
             return;
         }
-        if (isConfiguredSlot(inventory, Screen.MAIN, "close", 26, slot)) {
+        if (isConfiguredSlot(inventory, Screen.ROOT, "sheepout", 15, slot)) {
+            plugin.sendLocalized(
+                    player,
+                    "messages.box-coming-soon",
+                    "&e%box% ist aktuell nur ein Platzhalter.",
+                    "%box%", BedrockWinCounterPlugin.BoxType.SHEEP_OUT.getDisplayName()
+            );
+            return;
+        }
+        if (isConfiguredSlot(inventory, Screen.ROOT, "close", 26, slot)) {
             player.closeInventory();
         }
     }
 
-    private void handleTargetMenuClick(Player player, Inventory inventory, int slot) {
-        if (!ensureWinsAdmin(player)) {
+    private void handleBoxMainMenuClick(
+            Player player,
+            BedrockWinCounterPlugin.BoxType boxType,
+            Inventory inventory,
+            int slot
+    ) {
+        if (boxType == BedrockWinCounterPlugin.BoxType.BEDROCK) {
+            if (handleBedrockActionClick(player, inventory, slot)) {
+                return;
+            }
+        } else if (boxType == BedrockWinCounterPlugin.BoxType.SANDBOX) {
+            if (handleSandboxActionClick(player, inventory, slot)) {
+                return;
+            }
+        }
+
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "back", 18, slot)) {
+            openMainMenu(player);
+            return;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "target", 19, slot)) {
+            if (ensureWinsAdmin(player, boxType)) {
+                plugin.initializeMenuValue(player, boxType, BedrockWinCounterPlugin.MenuValueType.TARGET);
+                openTargetMenu(player, boxType);
+            }
+            return;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "change", 20, slot)) {
+            if (ensureWinsAdmin(player, boxType)) {
+                openChangeMenu(player, boxType);
+            }
+            return;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "set", 21, slot)) {
+            if (ensureWinsAdmin(player, boxType)) {
+                plugin.initializeMenuValue(player, boxType, BedrockWinCounterPlugin.MenuValueType.SET);
+                openSetMenu(player, boxType);
+            }
+            return;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "reset", 22, slot)) {
+            if (ensureWinsAdmin(player, boxType)) {
+                plugin.setWins(boxType, 0);
+                plugin.sendLocalized(
+                        player,
+                        "messages.counter-reset",
+                        "&a%counter% wurden zurueckgesetzt.",
+                        "%counter%", plugin.getCounterMessageLabel(boxType)
+                );
+                reopenMenu(player, Screen.BOX_MAIN, boxType);
+            }
+            return;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "display-toggle", 23, slot)) {
+            if (ensureWinsAdmin(player, boxType)) {
+                plugin.toggleDisplay(boxType);
+                plugin.sendLocalized(
+                        player,
+                        "messages.display-toggled",
+                        "&aAnzeige umgeschaltet: &6%mode%",
+                        "%mode%", plugin.getDisplaySummary()
+                );
+                reopenMenu(player, Screen.BOX_MAIN, boxType);
+            }
+            return;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "close", 26, slot)) {
+            player.closeInventory();
+        }
+    }
+
+    private boolean handleBedrockActionClick(Player player, Inventory inventory, int slot) {
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "teleport", 10, slot)) {
+            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.BEDROCK, "tp");
+            return true;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "main-user", 11, slot)) {
+            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.BEDROCK, "set_main_user " + player.getName());
+            return true;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "action-three", 12, slot)) {
+            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.BEDROCK, "toplock");
+            return true;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "action-four", 13, slot)) {
+            runConsoleCommand("minecraft:attribute " + player.getName() + " minecraft:block_interaction_range base set 20");
+            return true;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "fill", 14, slot)) {
+            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.BEDROCK, "fill");
+            return true;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "clear", 15, slot)) {
+            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.BEDROCK, "clear");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleSandboxActionClick(Player player, Inventory inventory, int slot) {
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "teleport", 10, slot)) {
+            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.SANDBOX, "tp");
+            return true;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "main-user", 11, slot)) {
+            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.SANDBOX, "set_main_user " + player.getName());
+            return true;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "action-three", 12, slot)) {
+            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.SANDBOX, "timer 10");
+            return true;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "action-four", 13, slot)) {
+            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.SANDBOX, "stop");
+            return true;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "fill", 14, slot)) {
+            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.SANDBOX, "fill");
+            return true;
+        }
+        if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "clear", 15, slot)) {
+            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.SANDBOX, "clear");
+            return true;
+        }
+        return false;
+    }
+
+    private void handleTargetMenuClick(
+            Player player,
+            BedrockWinCounterPlugin.BoxType boxType,
+            Inventory inventory,
+            int slot
+    ) {
+        if (!ensureWinsAdmin(player, boxType)) {
             return;
         }
 
         if (isConfiguredSlot(inventory, Screen.TARGET, "minus-ten", 10, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.TARGET, -10, Screen.TARGET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.TARGET, -10, Screen.TARGET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.TARGET, "minus-five", 11, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.TARGET, -5, Screen.TARGET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.TARGET, -5, Screen.TARGET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.TARGET, "minus-one", 12, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.TARGET, -1, Screen.TARGET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.TARGET, -1, Screen.TARGET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.TARGET, "plus-one", 14, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.TARGET, 1, Screen.TARGET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.TARGET, 1, Screen.TARGET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.TARGET, "plus-five", 15, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.TARGET, 5, Screen.TARGET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.TARGET, 5, Screen.TARGET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.TARGET, "plus-ten", 16, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.TARGET, 10, Screen.TARGET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.TARGET, 10, Screen.TARGET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.TARGET, "reset", 18, slot)) {
-            int resetValue = plugin.setMenuValue(player, BedrockWinCounterPlugin.MenuValueType.TARGET, 0);
+            int resetValue = plugin.setMenuValue(player, boxType, BedrockWinCounterPlugin.MenuValueType.TARGET, 0);
             plugin.sendLocalized(
                     player,
                     "messages.menu-value-set",
@@ -640,23 +926,24 @@ public final class BedrockMenuGui implements Listener {
                     "%type%", "target",
                     "%value%", Integer.toString(resetValue)
             );
-            reopenMenu(player, Screen.TARGET);
+            reopenMenu(player, Screen.TARGET, boxType);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.TARGET, "back", 20, slot)) {
-            openMainMenu(player);
+            openBoxMenu(player, boxType);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.TARGET, "confirm", 22, slot)) {
-            int value = plugin.getMenuValue(player, BedrockWinCounterPlugin.MenuValueType.TARGET);
-            plugin.setTargetWins(value);
+            int value = plugin.getMenuValue(player, boxType, BedrockWinCounterPlugin.MenuValueType.TARGET);
+            plugin.setTargetWins(boxType, value);
             plugin.sendLocalized(
                     player,
                     "messages.target-set",
-                    "&aWin-Ziel gesetzt: &6%value%",
+                    "&aWin-Ziel fuer %box% gesetzt: &6%value%",
+                    "%box%", plugin.getCounterDisplayName(boxType),
                     "%value%", Integer.toString(value)
             );
-            openMainMenu(player);
+            openBoxMenu(player, boxType);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.TARGET, "close", 26, slot)) {
@@ -664,37 +951,42 @@ public final class BedrockMenuGui implements Listener {
         }
     }
 
-    private void handleChangeMenuClick(Player player, Inventory inventory, int slot) {
-        if (!ensureWinsAdmin(player)) {
+    private void handleChangeMenuClick(
+            Player player,
+            BedrockWinCounterPlugin.BoxType boxType,
+            Inventory inventory,
+            int slot
+    ) {
+        if (!ensureWinsAdmin(player, boxType)) {
             return;
         }
 
         if (isConfiguredSlot(inventory, Screen.CHANGE, "minus-ten", 10, slot)) {
-            applyLiveChange(player, -10);
+            applyLiveChange(player, boxType, -10);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.CHANGE, "minus-five", 11, slot)) {
-            applyLiveChange(player, -5);
+            applyLiveChange(player, boxType, -5);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.CHANGE, "minus-one", 12, slot)) {
-            applyLiveChange(player, -1);
+            applyLiveChange(player, boxType, -1);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.CHANGE, "plus-one", 14, slot)) {
-            applyLiveChange(player, 1);
+            applyLiveChange(player, boxType, 1);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.CHANGE, "plus-five", 15, slot)) {
-            applyLiveChange(player, 5);
+            applyLiveChange(player, boxType, 5);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.CHANGE, "plus-ten", 16, slot)) {
-            applyLiveChange(player, 10);
+            applyLiveChange(player, boxType, 10);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.CHANGE, "back", 22, slot)) {
-            openMainMenu(player);
+            openBoxMenu(player, boxType);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.CHANGE, "close", 26, slot)) {
@@ -702,37 +994,42 @@ public final class BedrockMenuGui implements Listener {
         }
     }
 
-    private void handleSetMenuClick(Player player, Inventory inventory, int slot) {
-        if (!ensureWinsAdmin(player)) {
+    private void handleSetMenuClick(
+            Player player,
+            BedrockWinCounterPlugin.BoxType boxType,
+            Inventory inventory,
+            int slot
+    ) {
+        if (!ensureWinsAdmin(player, boxType)) {
             return;
         }
 
         if (isConfiguredSlot(inventory, Screen.SET, "minus-ten", 10, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.SET, -10, Screen.SET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.SET, -10, Screen.SET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.SET, "minus-five", 11, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.SET, -5, Screen.SET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.SET, -5, Screen.SET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.SET, "minus-one", 12, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.SET, -1, Screen.SET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.SET, -1, Screen.SET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.SET, "plus-one", 14, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.SET, 1, Screen.SET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.SET, 1, Screen.SET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.SET, "plus-five", 15, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.SET, 5, Screen.SET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.SET, 5, Screen.SET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.SET, "plus-ten", 16, slot)) {
-            adjustAndReopen(player, BedrockWinCounterPlugin.MenuValueType.SET, 10, Screen.SET);
+            adjustAndReopen(player, boxType, BedrockWinCounterPlugin.MenuValueType.SET, 10, Screen.SET);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.SET, "reset", 18, slot)) {
-            int resetValue = plugin.setMenuValue(player, BedrockWinCounterPlugin.MenuValueType.SET, 0);
+            int resetValue = plugin.setMenuValue(player, boxType, BedrockWinCounterPlugin.MenuValueType.SET, 0);
             plugin.sendLocalized(
                     player,
                     "messages.menu-value-set",
@@ -740,23 +1037,24 @@ public final class BedrockMenuGui implements Listener {
                     "%type%", "set",
                     "%value%", Integer.toString(resetValue)
             );
-            reopenMenu(player, Screen.SET);
+            reopenMenu(player, Screen.SET, boxType);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.SET, "back", 20, slot)) {
-            openMainMenu(player);
+            openBoxMenu(player, boxType);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.SET, "confirm", 22, slot)) {
-            int value = plugin.getMenuValue(player, BedrockWinCounterPlugin.MenuValueType.SET);
-            plugin.setWins(value);
+            int value = plugin.getMenuValue(player, boxType, BedrockWinCounterPlugin.MenuValueType.SET);
+            plugin.setWins(boxType, value);
             plugin.sendLocalized(
                     player,
-                    "messages.wins-set",
-                    "&aBedrock-Wins gesetzt. Neuer Stand: &6%wins%",
-                    "%wins%", Integer.toString(plugin.getWins())
+                    "messages.counter-set",
+                    "&a%counter% gesetzt. Neuer Stand: &6%wins%",
+                    "%counter%", plugin.getCounterMessageLabel(boxType),
+                    "%wins%", Integer.toString(plugin.getWins(boxType))
             );
-            openMainMenu(player);
+            openBoxMenu(player, boxType);
             return;
         }
         if (isConfiguredSlot(inventory, Screen.SET, "close", 26, slot)) {
@@ -764,28 +1062,36 @@ public final class BedrockMenuGui implements Listener {
         }
     }
 
-    private void applyLiveChange(Player player, int delta) {
-        plugin.addWins(delta);
+    private void applyLiveChange(Player player, BedrockWinCounterPlugin.BoxType boxType, int delta) {
+        plugin.addWins(boxType, delta);
         if (delta >= 0) {
             plugin.sendLocalized(
                     player,
-                    "messages.wins-adjusted",
-                    "&aBedrock-Wins angepasst. Neuer Stand: &6%wins%",
-                    "%wins%", Integer.toString(plugin.getWins())
+                    "messages.counter-adjusted",
+                    "&a%counter% angepasst. Neuer Stand: &6%wins%",
+                    "%counter%", plugin.getCounterMessageLabel(boxType),
+                    "%wins%", Integer.toString(plugin.getWins(boxType))
             );
         } else {
             plugin.sendLocalized(
                     player,
-                    "messages.wins-reduced",
-                    "&aBedrock-Wins reduziert. Neuer Stand: &6%wins%",
-                    "%wins%", Integer.toString(plugin.getWins())
+                    "messages.counter-reduced",
+                    "&a%counter% reduziert. Neuer Stand: &6%wins%",
+                    "%counter%", plugin.getCounterMessageLabel(boxType),
+                    "%wins%", Integer.toString(plugin.getWins(boxType))
             );
         }
-        reopenMenu(player, Screen.CHANGE);
+        reopenMenu(player, Screen.CHANGE, boxType);
     }
 
-    private void adjustAndReopen(Player player, BedrockWinCounterPlugin.MenuValueType type, int delta, Screen screen) {
-        int newValue = plugin.adjustMenuValue(player, type, delta);
+    private void adjustAndReopen(
+            Player player,
+            BedrockWinCounterPlugin.BoxType boxType,
+            BedrockWinCounterPlugin.MenuValueType type,
+            int delta,
+            Screen screen
+    ) {
+        int newValue = plugin.adjustMenuValue(player, boxType, type, delta);
         plugin.sendLocalized(
                 player,
                 "messages.menu-value-now",
@@ -793,22 +1099,32 @@ public final class BedrockMenuGui implements Listener {
                 "%type%", type.getKey(),
                 "%value%", Integer.toString(newValue)
         );
-        reopenMenu(player, screen);
+        reopenMenu(player, screen, boxType);
     }
 
-    private void reopenMenu(Player player, Screen screen) {
+    private void reopenMenu(Player player, Screen screen, BedrockWinCounterPlugin.BoxType boxType) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             switch (screen) {
-                case MAIN -> openMainMenu(player);
-                case TARGET -> openTargetMenu(player);
-                case CHANGE -> openChangeMenu(player);
-                case SET -> openSetMenu(player);
+                case ROOT -> openMainMenu(player);
+                case BOX_MAIN -> openBoxMenu(player, boxType);
+                case TARGET -> openTargetMenu(player, boxType);
+                case CHANGE -> openChangeMenu(player, boxType);
+                case SET -> openSetMenu(player, boxType);
             }
         });
     }
 
-    private boolean ensureWinsAdmin(CommandSender sender) {
-        if (sender.hasPermission("bedrockwins.admin")) {
+    private boolean ensureMenuAccess(Player player, BedrockWinCounterPlugin.BoxType boxType) {
+        if (plugin.hasMenuAccess(player, boxType)) {
+            return true;
+        }
+
+        plugin.sendLocalized(player, "messages.menu-no-permission", "&cDu darfst dieses Menue nicht oeffnen.");
+        return false;
+    }
+
+    private boolean ensureWinsAdmin(CommandSender sender, BedrockWinCounterPlugin.BoxType boxType) {
+        if (plugin.hasAdminAccess(sender, boxType)) {
             return true;
         }
 
@@ -816,7 +1132,11 @@ public final class BedrockMenuGui implements Listener {
         return false;
     }
 
-    private void runPlayerCommand(Player player, String command) {
+    private void runBoxCommand(Player player, BedrockWinCounterPlugin.BoxType boxType, String subCommand) {
+        String command = plugin.getBoxCommand(boxType);
+        if (subCommand != null && !subCommand.isBlank()) {
+            command += " " + subCommand;
+        }
         Bukkit.dispatchCommand(player, command);
     }
 
@@ -824,8 +1144,8 @@ public final class BedrockMenuGui implements Listener {
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
     }
 
-    private Inventory createInventory(Screen screen, String title, int size) {
-        return Bukkit.createInventory(new BedrockMenuHolder(screen), size, plugin.colorize(title));
+    private Inventory createInventory(Screen screen, BedrockWinCounterPlugin.BoxType boxType, String title, int size) {
+        return Bukkit.createInventory(new BedrockMenuHolder(screen, boxType), size, plugin.colorize(title));
     }
 
     private void fillInventory(Inventory inventory) {
@@ -838,8 +1158,17 @@ public final class BedrockMenuGui implements Listener {
         }
     }
 
+    private String boxPath(BedrockWinCounterPlugin.BoxType boxType, String suffix) {
+        return "menu." + boxType.getKey() + "." + suffix;
+    }
+
+    private Material getBoxMaterial(BedrockWinCounterPlugin.BoxType boxType, String suffix, Material fallback) {
+        return plugin.getMenuMaterial("materials." + boxType.getKey() + "." + suffix, fallback);
+    }
+
     private ItemStack createLocalizedHead(
             Player player,
+            Material material,
             String namePath,
             String fallbackName,
             String lorePath,
@@ -847,7 +1176,7 @@ public final class BedrockMenuGui implements Listener {
             String... replacements
     ) {
         ItemStack item = createLocalizedItem(
-                plugin.getMenuMaterial("materials.main.main-user", Material.PLAYER_HEAD),
+                material,
                 1,
                 namePath,
                 fallbackName,

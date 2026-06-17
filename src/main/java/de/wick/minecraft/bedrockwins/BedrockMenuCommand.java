@@ -18,12 +18,12 @@ public final class BedrockMenuCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.sendLocalized(sender, "messages.only-player", "&cDieses Menü ist nur ingame nutzbar.");
+            plugin.sendLocalized(sender, "messages.only-player", "&cDieses Menue ist nur ingame nutzbar.");
             return true;
         }
 
-        if (!player.hasPermission("bedrockwins.menu.use")) {
-            plugin.sendLocalized(player, "messages.menu-no-permission", "&cDu darfst dieses Menü nicht öffnen.");
+        if (!plugin.canOpenAnyMenu(player)) {
+            plugin.sendLocalized(player, "messages.menu-no-permission", "&cDu darfst dieses Menue nicht oeffnen.");
             return true;
         }
 

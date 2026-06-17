@@ -1,22 +1,26 @@
 name: BedrockWinCounter
-version: 1.0.0
+version: 1.1.0
 main: de.wick.minecraft.bedrockwins.BedrockWinCounterPlugin
 api-version: '1.21'
 author: Wick1990
-description: Tracks s2e-bedrock-box wins, displays them in-game, and provides an integrated Bedrock control menu.
+description: Tracks BedrockBox and Sandbox wins, displays them in-game, and provides a shared control menu.
 
 commands:
   bedrockmenu:
-    description: Opens the integrated Bedrock admin menu.
+    description: Opens the shared BedrockBox and Sandbox admin menu.
     usage: /bedrockmenu
   bedrockwins:
     description: Shows or manages the Bedrock win counter.
-    usage: /bedrockwins [add|remove|set|reset|target|reload|display]
+    usage: /bedrockwins [add|remove|set|reset|target|reload|display|menu]
     aliases: [bwins]
+  sandboxwins:
+    description: Shows or manages the Sandbox win counter.
+    usage: /sandboxwins [add|remove|set|reset|target|reload|display|menu]
+    aliases: [swins]
 
 permissions:
   bedrockwins.menu.use:
-    description: Allows opening the integrated Bedrock menu.
+    description: Allows opening the Bedrock section inside the shared menu.
     default: false
   bedrockwins.view:
     description: Allows viewing the Bedrock win counter.
@@ -26,3 +30,25 @@ permissions:
     default: false
     children:
       bedrockwins.view: true
+      bedrockwins.menu.use: true
+  sandboxwins.menu.use:
+    description: Allows opening the Sandbox section inside the shared menu.
+    default: false
+  sandboxwins.view:
+    description: Allows viewing the Sandbox win counter.
+    default: false
+  sandboxwins.admin:
+    description: Allows managing the Sandbox win counter.
+    default: false
+    children:
+      sandboxwins.view: true
+      sandboxwins.menu.use: true
+  sheepout.menu.use:
+    description: Reserved for a future Sheep Out section in the shared menu.
+    default: false
+  sheepout.view:
+    description: Reserved for future Sheep Out win visibility.
+    default: false
+  sheepout.admin:
+    description: Reserved for future Sheep Out administration.
+    default: false

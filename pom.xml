@@ -5,11 +5,11 @@
 
     <groupId>de.wick.minecraft</groupId>
     <artifactId>bedrock-win-counter</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>bedrock-win-counter</name>
-    <description>Counts s2e-bedrock-box wins from console output and mirrors them to a scoreboard.</description>
+    <description>Tracks BedrockBox and Sandbox wins, displays them in-game, and provides a shared control menu.</description>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
