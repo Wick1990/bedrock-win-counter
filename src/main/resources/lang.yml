@@ -1,36 +1,36 @@
 messages:
-  only-player: "&cDieses Menue ist nur ingame nutzbar."
-  no-permission: "&cDafuer fehlen dir die Rechte."
-  menu-no-permission: "&cDu darfst dieses Menue nicht oeffnen."
-  invalid-number: "&cBitte eine gueltige Zahl angeben."
-  invalid-target: "&cBitte eine gueltige Ziel-Zahl ab 0 angeben."
-  invalid-menu-type: "&cUnbekannter Menue-Typ. Nutze: target, change oder set."
+  only-player: "&cDieses Menü ist nur ingame nutzbar."
+  no-permission: "&cDafür fehlen dir die Rechte."
+  menu-no-permission: "&cDu darfst dieses Menü nicht öffnen."
+  invalid-number: "&cBitte eine gültige Zahl angeben."
+  invalid-target: "&cBitte eine gültige Ziel-Zahl ab 0 angeben."
+  invalid-menu-type: "&cUnbekannter Menü-Typ. Nutze: target, change oder set."
   unknown-subcommand: "&cUnbekannter Unterbefehl. Nutze: add, remove, set, reset, target, reload, display, menu"
   plugin-reloaded: "&aBedrockWinCounter wurde neu geladen."
   counter-current: "&fAktuelle %counter%: &6%wins%"
-  admin-hint: "&7Verfuegbar: /%command% add <zahl>, remove <zahl>, set <zahl>, reset, target <zahl|clear>, reload, display"
-  counter-reset: "&a%counter% wurden zurueckgesetzt."
+  admin-hint: "&7Verfügbar: /%command% add <zahl>, remove <zahl>, set <zahl>, reset, target <zahl|clear>, reload, display"
+  counter-reset: "&a%counter% wurden zurückgesetzt."
   counter-adjusted: "&a%counter% angepasst. Neuer Stand: &6%wins%"
   counter-reduced: "&a%counter% reduziert. Neuer Stand: &6%wins%"
   counter-set: "&a%counter% gesetzt. Neuer Stand: &6%wins%"
-  target-status: "&7Aktuelles Ziel fuer %box%: &6%value%&7. Nutze: /%command% target <zahl|clear>"
-  target-cleared: "&aWin-Ziel fuer %box% entfernt."
-  target-set: "&aWin-Ziel fuer %box% gesetzt: &6%value%"
+  target-status: "&7Aktuelles Ziel für %box%: &6%value%&7. Nutze: /%command% target <zahl|clear>"
+  target-cleared: "&aWin-Ziel für %box% entfernt."
+  target-set: "&aWin-Ziel für %box% gesetzt: &6%value%"
   display-status: "&7Anzeige aktuell: &6%mode%&7. Nutze: /%command% display <on|off|toggle|bossbar|sidebar>"
   display-set: "&aAnzeige gesetzt: &6%mode%"
   display-disabled: "&aAnzeige deaktiviert."
   display-toggled: "&aAnzeige umgeschaltet: &6%mode%"
-  menu-value-set: "&7Menuewert &8(%type%&8) &7gesetzt auf: &6%value%"
-  menu-value-now: "&7Menuewert &8(%type%&8) &7jetzt: &6%value%"
+  menu-value-set: "&7Menüwert &8(%type%&8) &7gesetzt auf: &6%value%"
+  menu-value-now: "&7Menüwert &8(%type%&8) &7jetzt: &6%value%"
   box-coming-soon: "&e%box% ist aktuell nur ein Platzhalter."
 
 menu:
   shared:
     back:
-      name: "&7Zurueck"
+      name: "&7Zurück"
       lore: []
     close:
-      name: "&cSchliessen"
+      name: "&cSchließen"
       lore: []
     plus-one:
       name: "&a+1"
@@ -51,16 +51,16 @@ menu:
     header:
       name: "&6&lBox Hub"
       lore:
-        - "&7Waehle die gewuenschte Box."
+        - "&7Wähle die gewünschte Box."
     bedrock:
       name: "&5BedrockBox"
       lore:
-        - "&7Oeffnet das Bedrock-Menue."
+        - "&7Öffnet das Bedrock-Menü."
         - "&7Wins: &6%wins%"
     sandbox:
       name: "&6Sandbox"
       lore:
-        - "&7Oeffnet das Sandbox-Menue."
+        - "&7Öffnet das Sandbox-Menü."
         - "&7Wins: &6%wins%"
     sheepout:
       name: "&fSheep Out"
@@ -71,16 +71,16 @@ menu:
       lore:
         - "&7Status: &f%mode%"
   box-main:
-    title: "&8%box% Menue"
+    title: "&8%box% Menü"
     target:
       name: "&eWin-Ziel setzen"
       lore:
-        - "&7Oeffnet ein Untermenue."
+        - "&7Öffnet ein Untermenü."
         - "&7Dort stellst du den Zielwert ein."
     change:
-      name: "&aWins aendern"
+      name: "&aWins ändern"
       lore:
-        - "&7Gruene Felder addieren Wins."
+        - "&7Grüne Felder addieren Wins."
         - "&7Rote Felder ziehen direkt ab."
     set:
       name: "&6Wins set"
@@ -104,7 +104,7 @@ menu:
   bedrock:
     main:
       header:
-        name: "&5&lBedrock Menue"
+        name: "&5&lBedrock Menü"
         lore: []
       teleport:
         name: "&bZur Box teleportieren"
@@ -128,7 +128,7 @@ menu:
           - ""
           - "&8Befehl: &f/attribute %player% ... 20"
       fill:
-        name: "&fBox fuellen"
+        name: "&fBox füllen"
         lore:
           - "&8Befehl: &7/bedrock fill"
       clear:
@@ -138,7 +138,7 @@ menu:
   sandbox:
     main:
       header:
-        name: "&6&lSandbox Menue"
+        name: "&6&lSandbox Menü"
         lore: []
       teleport:
         name: "&bZur Sandbox teleportieren"
@@ -150,16 +150,16 @@ menu:
           - "&7Setzt dich direkt als Main User."
           - ""
           - "&8Befehl: &f/sandbox set_main_user %player%"
-      timer:
-        name: "&eTimer starten"
+      creator-stats:
+        name: "&eCreator-Stats anzeigen"
         lore:
-          - "&8Befehl: &7/sandbox timer 10"
-      stop:
-        name: "&cSandbox stoppen"
+          - "&8Befehl: &7/creatorstats"
+      creator-reset:
+        name: "&cCreator-Punkte resetten"
         lore:
-          - "&8Befehl: &7/sandbox stop"
+          - "&8Befehl: &7/creatorreset"
       fill:
-        name: "&6Sandbox fuellen"
+        name: "&6Sandbox füllen"
         lore:
           - "&8Befehl: &7/sandbox fill"
       clear:
@@ -172,7 +172,7 @@ menu:
       name: "&e&lWin-Ziel setzen"
       lore:
         - "&7Stelle den Zielwert mit den"
-        - "&7Schaltflaechen unten ein."
+        - "&7Schaltflächen unten ein."
     info:
       name: "&fAktueller Zielwert"
       lore:
@@ -183,22 +183,22 @@ menu:
       name: "&eAuf 0 setzen"
       lore: []
     confirm:
-      name: "&aZiel uebernehmen"
+      name: "&aZiel übernehmen"
       lore:
-        - "&7Uebernimmt den aktuell"
+        - "&7Übernimmt den aktuell"
         - "&7eingestellten Zielwert."
   change:
-    title: "&8%box% Wins aendern"
+    title: "&8%box% Wins ändern"
     header:
-      name: "&a&lWins aendern"
+      name: "&a&lWins ändern"
       lore:
-        - "&7Jeder Klick fuehrt die"
-        - "&7Aenderung sofort live aus."
+        - "&7Jeder Klick führt die"
+        - "&7Änderung sofort live aus."
     info:
-      name: "&fDirekte Aenderung"
+      name: "&fDirekte Änderung"
       lore:
         - "&7Box: &f%box%"
-        - "&aGruen = add"
+        - "&aGrün = add"
         - "&cRot = remove"
         - "&7Stand: &6%wins%"
   set:
@@ -207,7 +207,7 @@ menu:
       name: "&6&lWins set"
       lore:
         - "&7Hier sind auch negative Werte"
-        - "&7ausdruecklich erlaubt."
+        - "&7ausdrücklich erlaubt."
     info:
       name: "&fAktueller Set-Wert"
       lore:
@@ -218,7 +218,7 @@ menu:
       name: "&eAuf 0 setzen"
       lore: []
     confirm:
-      name: "&6Set ausfuehren"
+      name: "&6Set ausführen"
       lore:
-        - "&7Uebernimmt den aktuell"
+        - "&7Übernimmt den aktuell"
         - "&7eingestellten Set-Wert."

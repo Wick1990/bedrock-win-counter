@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -220,9 +221,16 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         private Integer targetWins;
     }
 
+    private static final class RecentMarkerState {
+        private String dedupeKey;
+        private long matchedAtMillis;
+    }
+
     private final EnumMap<BoxType, CounterState> counterStates = new EnumMap<>(BoxType.class);
     private final EnumMap<BoxType, Set<String>> winMarkers = new EnumMap<>(BoxType.class);
+    private final EnumMap<BoxType, RecentMarkerState> recentMarkerStates = new EnumMap<>(BoxType.class);
     private final Map<UUID, EnumMap<BoxType, EnumMap<MenuValueType, Integer>>> menuValues = new HashMap<>();
+    private final Object recentMarkerLock = new Object();
 
     private File dataFile;
     private File langFile;
@@ -252,6 +260,7 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        mergePrimaryConfigDefaults();
         loadSupportFiles();
         loadDataFile();
         reloadPluginState();
@@ -293,6 +302,7 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
 
     public void reloadPluginState() {
         reloadConfig();
+        mergePrimaryConfigDefaults();
         loadSupportFiles();
         loadMarkers();
         configuredDisplayMode = parseDisplayMode(getConfig().getString("display.mode", "BOSSBAR"), DisplayMode.BOSSBAR);
@@ -347,7 +357,7 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
 
     public String localize(String path, String fallback, String... replacements) {
         String raw = langConfig == null ? fallback : langConfig.getString(path, fallback);
-        return applyReplacements(colorize(raw), replacements);
+        return applyReplacements(colorize(normalizeGermanText(raw)), replacements);
     }
 
     public List<String> localizeList(String path, List<String> fallback, String... replacements) {
@@ -357,6 +367,7 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         }
 
         return rawLines.stream()
+                .map(this::normalizeGermanText)
                 .map(this::colorize)
                 .map(line -> applyReplacements(line, replacements))
                 .toList();
@@ -669,7 +680,13 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         langConfig = YamlConfiguration.loadConfiguration(langFile);
         menuConfig = YamlConfiguration.loadConfiguration(menuFile);
         mergeMissingDefaults(langConfig, langFile, "lang.yml");
+        normalizeLegacyGermanSpellings(langConfig, langFile, "lang.yml");
         mergeMissingDefaults(menuConfig, menuFile, "menu.yml");
+    }
+
+    private void mergePrimaryConfigDefaults() {
+        File configFile = new File(getDataFolder(), "config.yml");
+        mergeMissingDefaults(getConfig(), configFile, "config.yml");
     }
 
     private void saveBundledFileIfMissing(String resourceName, File targetFile) {
@@ -704,6 +721,103 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         } catch (IOException exception) {
             getLogger().warning("Could not merge defaults into " + resourceName + ": " + exception.getMessage());
         }
+    }
+
+    private void normalizeLegacyGermanSpellings(FileConfiguration targetConfig, File targetFile, String resourceName) {
+        boolean changed = false;
+
+        for (String key : targetConfig.getKeys(true)) {
+            if (targetConfig.isConfigurationSection(key)) {
+                continue;
+            }
+
+            Object value = targetConfig.get(key);
+            if (value instanceof String stringValue) {
+                String normalizedValue = normalizeGermanText(stringValue);
+                if (!stringValue.equals(normalizedValue)) {
+                    targetConfig.set(key, normalizedValue);
+                    changed = true;
+                }
+                continue;
+            }
+
+            if (!(value instanceof List<?> rawList)) {
+                continue;
+            }
+
+            List<String> normalizedList = new ArrayList<>();
+            boolean listChanged = false;
+            boolean stringOnlyList = true;
+            for (Object entry : rawList) {
+                if (!(entry instanceof String stringEntry)) {
+                    stringOnlyList = false;
+                    break;
+                }
+
+                String normalizedEntry = normalizeGermanText(stringEntry);
+                normalizedList.add(normalizedEntry);
+                if (!stringEntry.equals(normalizedEntry)) {
+                    listChanged = true;
+                }
+            }
+
+            if (stringOnlyList && listChanged) {
+                targetConfig.set(key, normalizedList);
+                changed = true;
+            }
+        }
+
+        if (!changed) {
+            return;
+        }
+
+        try {
+            targetConfig.save(targetFile);
+        } catch (IOException exception) {
+            getLogger().warning("Could not normalize German text in " + resourceName + ": " + exception.getMessage());
+        }
+    }
+
+    private String normalizeGermanText(String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+
+        return value
+                .replace("Menuewert", "Menüwert")
+                .replace("Menue-Typ", "Menü-Typ")
+                .replace("Menue", "Menü")
+                .replace("menue", "menü")
+                .replace("Dafuer", "Dafür")
+                .replace("dafuer", "dafür")
+                .replace("Verfuegbar", "Verfügbar")
+                .replace("verfuegbar", "verfügbar")
+                .replace("fuer", "für")
+                .replace("Zurueck", "Zurück")
+                .replace("zurueck", "zurück")
+                .replace("Schliessen", "Schließen")
+                .replace("schliessen", "schließen")
+                .replace("Oeffnet", "Öffnet")
+                .replace("oeffnet", "öffnet")
+                .replace("oeffnen", "öffnen")
+                .replace("Waehle", "Wähle")
+                .replace("waehle", "wähle")
+                .replace("gewuenschte", "gewünschte")
+                .replace("gueltige", "gültige")
+                .replace("Gruene", "Grüne")
+                .replace("gruene", "grüne")
+                .replace("Gruen", "Grün")
+                .replace("gruen", "grün")
+                .replace("Aenderung", "Änderung")
+                .replace("Aendern", "Ändern")
+                .replace("aendern", "ändern")
+                .replace("fuehrt", "führt")
+                .replace("ausdruecklich", "ausdrücklich")
+                .replace("Uebernimmt", "Übernimmt")
+                .replace("uebernehmen", "übernehmen")
+                .replace("ueber", "über")
+                .replace("zurueckgesetzt", "zurückgesetzt")
+                .replace("fuellen", "füllen");
     }
 
     private void startLatestLogWatcher() {
@@ -772,6 +886,10 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
 
         BoxType boxType = findMatchingBox(message);
         if (boxType == null) {
+            return;
+        }
+
+        if (shouldSuppressDuplicateMarker(boxType, message)) {
             return;
         }
 
@@ -1121,6 +1239,49 @@ public final class BedrockWinCounterPlugin extends JavaPlugin implements Listene
         }
 
         return normalizedMessage.startsWith("[bedrockwincounter]");
+    }
+
+    private boolean shouldSuppressDuplicateMarker(BoxType boxType, String message) {
+        long dedupeWindowMillis = getMarkerDedupeWindowMillis(boxType);
+        if (dedupeWindowMillis <= 0L) {
+            return false;
+        }
+
+        String dedupeKey = getMarkerDedupeKey(boxType, message);
+        if (dedupeKey.isEmpty()) {
+            return false;
+        }
+
+        long now = System.currentTimeMillis();
+        synchronized (recentMarkerLock) {
+            RecentMarkerState state = recentMarkerStates.computeIfAbsent(boxType, ignored -> new RecentMarkerState());
+            if (dedupeKey.equals(state.dedupeKey) && now - state.matchedAtMillis <= dedupeWindowMillis) {
+                return true;
+            }
+
+            state.dedupeKey = dedupeKey;
+            state.matchedAtMillis = now;
+            return false;
+        }
+    }
+
+    private long getMarkerDedupeWindowMillis(BoxType boxType) {
+        String configPath = "boxes." + boxType.getKey() + ".log-dedupe-ms";
+        long fallback = boxType == BoxType.SANDBOX ? 2000L : 0L;
+        return Math.max(0L, getConfig().getLong(configPath, fallback));
+    }
+
+    private String getMarkerDedupeKey(BoxType boxType, String message) {
+        String normalizedMessage = message == null ? "" : message.trim().toLowerCase(Locale.ROOT);
+        if (normalizedMessage.isEmpty()) {
+            return "";
+        }
+
+        if (boxType == BoxType.SANDBOX && normalizedMessage.endsWith("win-up")) {
+            return "win-up";
+        }
+
+        return normalizedMessage;
     }
 
     private BoxType findMatchingBox(String message) {

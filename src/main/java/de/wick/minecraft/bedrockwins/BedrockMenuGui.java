@@ -698,18 +698,18 @@ public final class BedrockMenuGui implements Listener {
         setConfiguredItem(inventory, Screen.BOX_MAIN, "action-three", 12, createLocalizedItem(
                 getBoxMaterial(boxType, "main.timer", Material.CLOCK),
                 1,
-                boxPath(boxType, "main.timer.name"),
-                "&eTimer starten",
-                boxPath(boxType, "main.timer.lore"),
-                List.of("&8Befehl: &7/sandbox timer 10")
+                "menu.sandbox.main.creator-stats.name",
+                "&eCreator-Stats anzeigen",
+                "menu.sandbox.main.creator-stats.lore",
+                List.of("&8Befehl: &7/creatorstats")
         ));
         setConfiguredItem(inventory, Screen.BOX_MAIN, "action-four", 13, createLocalizedItem(
                 getBoxMaterial(boxType, "main.stop", Material.BARRIER),
                 1,
-                boxPath(boxType, "main.stop.name"),
-                "&cSandbox stoppen",
-                boxPath(boxType, "main.stop.lore"),
-                List.of("&8Befehl: &7/sandbox stop")
+                "menu.sandbox.main.creator-reset.name",
+                "&cCreator-Punkte resetten",
+                "menu.sandbox.main.creator-reset.lore",
+                List.of("&8Befehl: &7/creatorreset")
         ));
         setConfiguredItem(inventory, Screen.BOX_MAIN, "fill", 14, createLocalizedItem(
                 getBoxMaterial(boxType, "main.fill", Material.SAND),
@@ -865,11 +865,11 @@ public final class BedrockMenuGui implements Listener {
             return true;
         }
         if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "action-three", 12, slot)) {
-            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.SANDBOX, "timer 10");
+            runPlayerCommand(player, "creatorstats");
             return true;
         }
         if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "action-four", 13, slot)) {
-            runBoxCommand(player, BedrockWinCounterPlugin.BoxType.SANDBOX, "stop");
+            runPlayerCommand(player, "creatorreset");
             return true;
         }
         if (isConfiguredSlot(inventory, Screen.BOX_MAIN, "fill", 14, slot)) {
@@ -1137,6 +1137,10 @@ public final class BedrockMenuGui implements Listener {
         if (subCommand != null && !subCommand.isBlank()) {
             command += " " + subCommand;
         }
+        Bukkit.dispatchCommand(player, command);
+    }
+
+    private void runPlayerCommand(Player player, String command) {
         Bukkit.dispatchCommand(player, command);
     }
 
