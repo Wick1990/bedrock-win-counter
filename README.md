@@ -1,34 +1,52 @@
 # Bedrock Win Counter
 
-`BedrockWinCounter` is a Paper plugin for Bedrock TNT Box setups based on `s2e-bedrock-box` (Stream2Earn).
+`BedrockWinCounter` is a Paper plugin for Stream2Earn-style box formats.
 
-It watches the server log for the win marker `bedrock_win`, stores the current win count persistently, displays the result in-game, and provides a permission-based integrated control menu for the most important Bedrock Box and win-counter actions.
+It can track wins for both `s2e-bedrock-box` and `s2e-sand-box`, store both counters persistently, show them in-game, and provide a shared admin menu for the most important counter and box actions.
 
 ## Features
 
-- Automatic win detection through the `bedrock_win` log marker
-- Persistent win counter stored in `plugins/BedrockWinCounter/data.yml`
-- Optional win target display such as `0/10`
-- BossBar display with dynamic colors:
-  - red for negative wins
-  - yellow/gold for `0`
-  - green for positive wins
-- Optional sidebar scoreboard mode
-- Integrated `/bedrockmenu` GUI with permission checks
-- Customizable menu texts via `lang.yml`
-- Customizable menu materials, step sizes, and layout via `menu.yml`
-- Automatic merge of newly added default entries into `lang.yml` and `menu.yml`
+- Separate win counters for:
+  - `BedrockBox`
+  - `Sandbox`
+- Automatic log-based win detection
+- Persistent counters and optional target values in `plugins/BedrockWinCounter/data.yml`
+- Shared `/bedrockmenu` hub with:
+  - `BedrockBox`
+  - `Sandbox`
+  - `Sheep Out` placeholder
+- Integrated counter management for both box types
+- BossBar and sidebar display modes
+- Per-box win marker configuration in `config.yml`
+- Automatic merge of missing defaults into:
+  - `config.yml`
+  - `lang.yml`
+  - `menu.yml`
+- Automatic normalization of bundled default texts to proper German umlauts in `lang.yml`
+- Sandbox log deduplication to prevent accidental multi-counting from repeated identical win markers
 
-## Dependency
+## Supported win markers
 
-This plugin is designed for use with:
+By default, the plugin listens for:
+
+- `bedrock_win` for `s2e-bedrock-box`
+- `[s2e-sand-box] win-up` for `s2e-sand-box`
+- `win-up` as an additional Sandbox fallback marker
+
+These markers can be changed in `config.yml`.
+
+## Dependencies
+
+This plugin is designed to work with one or both of these plugins:
 
 - `s2e-bedrock-box`
+- `s2e-sand-box`
 
 Important:
 
-- The automatic win counter only makes sense if `s2e-bedrock-box` is installed and outputs the marker `bedrock_win`.
-- Without `s2e-bedrock-box`, the plugin can still be used manually through commands, but can also listen to any other marker that might be output in the console. (Needs to be configured in config.yml)
+- Automatic Bedrock win counting only works if the Bedrock plugin writes its win marker into the server log.
+- Automatic Sandbox win counting only works if the Sandbox plugin writes its win marker into the server log.
+- The shared menu can expose shortcuts for BedrockBox and Sandbox actions, but the underlying target plugin still needs to be installed and provide the called command.
 
 ## Requirements
 
@@ -37,97 +55,102 @@ Important:
 
 ## Installation
 
-1. Build the plugin with Maven or download the compiled JAR from a release.
+1. Build the plugin with Maven or use a compiled release JAR.
 2. Copy the JAR into your server's `plugins` folder.
-3. Make sure `s2e-bedrock-box` is installed on the same server.
-4. Start the server once so the plugin can generate its files.
-5. Review the generated configuration files in `plugins/BedrockWinCounter/`.
-6. Grant the required permissions to the appropriate staff or streamer roles.
+3. Install `s2e-bedrock-box`, `s2e-sand-box`, or both.
+4. Start the server once.
+5. Open `plugins/BedrockWinCounter/`.
+6. Review `config.yml`, `lang.yml`, and `menu.yml`.
+7. Grant the required permissions to your team, streamer, or staff roles.
 
 ## Commands
 
-### Main commands
+### Shared menu
 
 - `/bedrockmenu`
-  - Opens the integrated Bedrock control menu.
+  - Opens the shared hub menu.
+
+### Bedrock counter
 
 - `/bedrockwins`
-  - Shows the current win count and target.
-
-### Win management
-
+  - Shows the current Bedrock counter and target.
 - `/bedrockwins add <number>`
-  - Adds wins.
-
 - `/bedrockwins remove <number>`
-  - Removes wins.
-
 - `/bedrockwins set <number>`
-  - Sets the current win count directly.
-
 - `/bedrockwins reset`
-  - Resets the win counter to `0`.
-
 - `/bedrockwins target <number>`
-  - Sets a win target.
-
 - `/bedrockwins target clear`
-  - Removes the current win target.
-
-### Display and maintenance
-
 - `/bedrockwins display on`
-  - Enables the display in BossBar mode.
-
 - `/bedrockwins display off`
-  - Disables the display completely.
-
 - `/bedrockwins display toggle`
-  - Toggles the display on or off.
-
 - `/bedrockwins display bossbar`
-  - Forces BossBar mode.
-
 - `/bedrockwins display sidebar`
-  - Forces sidebar scoreboard mode.
-
 - `/bedrockwins reload`
-  - Reloads `config.yml`, `lang.yml`, and `menu.yml`.
+
+### Sandbox counter
+
+- `/sandboxwins`
+  - Shows the current Sandbox counter and target.
+- `/sandboxwins add <number>`
+- `/sandboxwins remove <number>`
+- `/sandboxwins set <number>`
+- `/sandboxwins reset`
+- `/sandboxwins target <number>`
+- `/sandboxwins target clear`
+- `/sandboxwins display on`
+- `/sandboxwins display off`
+- `/sandboxwins display toggle`
+- `/sandboxwins display bossbar`
+- `/sandboxwins display sidebar`
+- `/sandboxwins reload`
 
 ### Internal helper command
 
 - `/bedrockwins menu <target|change|set> <init|adjust|reset|apply> [number]`
-  - Internal helper command used by the integrated GUI.
-  - Normally you do not need to use this manually.
+- `/sandboxwins menu <target|change|set> <init|adjust|reset|apply> [number]`
+
+These are internal GUI helper commands and normally do not need to be used manually.
 
 ## Permissions
 
+### Bedrock
+
 - `bedrockwins.menu.use`
-  - Allows a player to open `/bedrockmenu`.
-
+  - Allows opening the Bedrock section inside the shared menu.
 - `bedrockwins.view`
-  - Allows viewing the win counter.
-  - Players with this permission can also see the BossBar display.
-
+  - Allows viewing the Bedrock counter and BossBar.
 - `bedrockwins.admin`
-  - Allows full management of the win counter and menu actions.
-  - Includes `bedrockwins.view`.
+  - Allows full Bedrock counter management.
+
+### Sandbox
+
+- `sandboxwins.menu.use`
+  - Allows opening the Sandbox section inside the shared menu.
+- `sandboxwins.view`
+  - Allows viewing the Sandbox counter and BossBar.
+- `sandboxwins.admin`
+  - Allows full Sandbox counter management.
+
+### Reserved placeholder
+
+- `sheepout.menu.use`
+- `sheepout.view`
+- `sheepout.admin`
+
+These are already registered for a future `Sheep Out` section.
 
 ## Generated files
 
 After the first server start, the plugin creates and uses these files:
 
 - `plugins/BedrockWinCounter/config.yml`
-  - Core configuration for win markers and display behavior
-
+  - Win markers, display settings, and per-box options
 - `plugins/BedrockWinCounter/lang.yml`
-  - Messages, menu titles, and lore texts
-
+  - Chat messages, menu names, menu lore, and UI text
 - `plugins/BedrockWinCounter/menu.yml`
-  - Menu materials, button sizes, and menu layout slots
-
+  - Menu materials, button amounts, and layout slots
 - `plugins/BedrockWinCounter/data.yml`
-  - Stored runtime data such as current wins, target wins, and display mode
+  - Stored counters, targets, and display mode state
 
 ## Configuration overview
 
@@ -135,63 +158,95 @@ After the first server start, the plugin creates and uses these files:
 
 Use this file to configure:
 
-- the log markers that count as wins
-- the default display mode
+- win markers per box
+- Sandbox log dedupe window
+- display mode defaults
 - scoreboard settings
-- BossBar styling and text colors
-- the chat prefix
+- BossBar colors and progress
+- chat prefix
+
+Current structure is based on per-box sections such as:
+
+- `boxes.bedrock.*`
+- `boxes.sandbox.*`
 
 ### `lang.yml`
 
 Use this file to configure:
 
-- command feedback messages
+- feedback messages
 - permission messages
 - menu titles
-- menu item names and lore
+- menu item names
+- menu lore
 
 ### `menu.yml`
 
 Use this file to configure:
 
-- menu item materials
-- unified positive and negative button styles
-- button stack sizes for `+1`, `+5`, `+10`, `-1`, `-5`, `-10`
-- complete slot layout of all integrated submenus
+- item materials
+- stack amounts for `+1`, `+5`, `+10`, `-1`, `-5`, `-10`
+- layout slots
+- screen sizes for all menus
+
+## Shared menu overview
+
+The shared `/bedrockmenu` hub currently contains:
+
+- a root menu with `BedrockBox`, `Sandbox`, and `Sheep Out`
+- a Bedrock submenu with box and counter shortcuts
+- a Sandbox submenu with box and counter shortcuts
+- shared target/change/set submenus for both counters
+
+The `Sheep Out` entry is currently only a placeholder and does not track wins yet.
+
+## Upgrade notes
+
+If you are upgrading from an older Bedrock-only version:
+
+1. Start the server once with the new JAR.
+2. Let the plugin update missing default entries in `config.yml`, `lang.yml`, and `menu.yml`.
+3. Check that `config.yml` now contains both:
+   - `boxes.bedrock.win-markers`
+   - `boxes.sandbox.win-markers`
+4. Review your permissions for the new Sandbox commands and menu section.
+5. If you customized `lang.yml`, verify the new menu entries and texts after startup.
 
 ## Typical workflow
 
-1. `s2e-bedrock-box` triggers a win and writes `bedrock_win` into the server log.
+### BedrockBox
+
+1. `s2e-bedrock-box` writes `bedrock_win` into the server log.
 2. `BedrockWinCounter` detects the marker in `latest.log`.
-3. The plugin increments the stored win counter.
-4. The BossBar or sidebar updates automatically.
-5. Staff can adjust, reset, or target the counter through commands or `/bedrockmenu`.
+3. The Bedrock counter increases by `+1`.
+4. The configured display updates automatically.
+
+### Sandbox
+
+1. `s2e-sand-box` writes its win marker into the server log.
+2. `BedrockWinCounter` detects the Sandbox marker.
+3. Repeated identical Sandbox win markers are deduplicated inside the configured time window.
+4. The Sandbox counter increases by `+1`.
+5. The configured display updates automatically.
 
 ## Notes
 
 - The plugin does not require a database.
-- The counter survives restarts because it is stored in `data.yml`.
-- Players only see the BossBar if they have `bedrockwins.view`.
-- Menu access is separated from win administration through `bedrockwins.menu.use`.
+- Counter data survives restarts because it is stored in `data.yml`.
+- Missing default entries are merged automatically on startup and reload.
+- The plugin can still be used manually even if only one supported box plugin is installed.
 
 ## Contributing
 
 Pull requests are welcome.
 
-All contributions are reviewed by the maintainers before merge. For details, see:
+For contribution guidelines, see:
 
 - `CONTRIBUTING.md`
 
 ## License
 
 This project is released under the `Bedrock Win Counter Community License 1.0`.
-
-In practical terms, this means:
-
-- the source code is publicly available
-- the plugin may be used, modified, and shared free of charge
-- the plugin may be used on private and public servers
-- selling the plugin, selling modified versions, or redistributing it as a paid product is not allowed without prior written permission
 
 See:
 
